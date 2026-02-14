@@ -31,4 +31,9 @@
     </ProjectReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Database Query\" />
+    <Folder Include="wwwroot\ProfileImg\" />
+  </ItemGroup>
+
 </Project>

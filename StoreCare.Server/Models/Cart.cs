@@ -5,13 +5,13 @@ namespace StoreCare.Server.Models;
 
 public partial class Cart
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = null!;
 
     public string CartSessionId { get; set; } = null!;
 
-    public int UserId { get; set; }
+    public string UserId { get; set; } = null!;
 
-    public int ItemId { get; set; }
+    public string ItemId { get; set; } = null!;
 
     public int? Quantity { get; set; }
 

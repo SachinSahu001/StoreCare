@@ -54,11 +54,13 @@ public partial class StoreCareDbContext : DbContext
     {
         modelBuilder.Entity<Cart>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Cart__3214EC07084521BF");
+            entity.HasKey(e => e.Id).HasName("PK__Cart__3214EC071F24EC33");
 
             entity.ToTable("Cart");
 
             entity.HasIndex(e => e.Active, "IX_Cart_Active");
+
+            entity.HasIndex(e => e.CartSessionId, "IX_Cart_CartSessionId");
 
             entity.HasIndex(e => e.IsCheckedOut, "IX_Cart_IsCheckedOut");
 
@@ -66,15 +68,18 @@ public partial class StoreCareDbContext : DbContext
 
             entity.HasIndex(e => e.UserId, "IX_Cart_UserId");
 
+            entity.Property(e => e.Id)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("(newid())");
             entity.Property(e => e.Active).HasDefaultValue(true);
             entity.Property(e => e.AddedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.CartSessionId)
-                .HasMaxLength(100)
-                .IsUnicode(false);
+            entity.Property(e => e.CartSessionId).HasMaxLength(100);
             entity.Property(e => e.IsCheckedOut).HasDefaultValue(false);
+            entity.Property(e => e.ItemId).HasMaxLength(50);
             entity.Property(e => e.Quantity).HasDefaultValue(1);
+            entity.Property(e => e.UserId).HasMaxLength(50);
 
             entity.HasOne(d => d.Item).WithMany(p => p.Carts)
                 .HasForeignKey(d => d.ItemId)
@@ -89,21 +94,31 @@ public partial class StoreCareDbContext : DbContext
 
         modelBuilder.Entity<Inventory>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Inventor__3214EC0753AF1397");
+            entity.HasKey(e => e.Id).HasName("PK__Inventor__3214EC07267FB4F1");
 
             entity.ToTable("Inventory");
 
+            entity.HasIndex(e => e.CurrentStock, "IX_Inventory_CurrentStock");
+
+            entity.HasIndex(e => e.ItemId, "IX_Inventory_ItemId");
+
             entity.HasIndex(e => e.ItemId, "UK_Inventory_Item").IsUnique();
 
+            entity.Property(e => e.Id)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("(newid())");
             entity.Property(e => e.Active).HasDefaultValue(true);
+            entity.Property(e => e.CreatedBy).HasMaxLength(200);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.CurrentStock).HasDefaultValue(0);
+            entity.Property(e => e.ItemId).HasMaxLength(50);
             entity.Property(e => e.LastStockInDate).HasColumnType("datetime");
             entity.Property(e => e.LastStockOutDate).HasColumnType("datetime");
             entity.Property(e => e.MaximumStock).HasDefaultValue(1000);
             entity.Property(e => e.MinimumStock).HasDefaultValue(10);
+            entity.Property(e => e.ModifiedBy).HasMaxLength(200);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
 
             entity.HasOne(d => d.Item).WithOne(p => p.Inventory)
@@ -114,13 +129,17 @@ public partial class StoreCareDbContext : DbContext
 
         modelBuilder.Entity<Item>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Item__3214EC07052F5A93");
+            entity.HasKey(e => e.Id).HasName("PK__Item__3214EC07E7BF253C");
 
             entity.ToTable("Item");
 
             entity.HasIndex(e => e.Active, "IX_Item_Active");
 
             entity.HasIndex(e => e.IsFeatured, "IX_Item_IsFeatured");
+
+            entity.HasIndex(e => e.ItemCode, "IX_Item_ItemCode");
+
+            entity.HasIndex(e => e.ItemName, "IX_Item_ItemName");
 
             entity.HasIndex(e => e.Price, "IX_Item_Price");
 
@@ -130,9 +149,13 @@ public partial class StoreCareDbContext : DbContext
 
             entity.HasIndex(e => e.StoreId, "IX_Item_StoreId");
 
-            entity.HasIndex(e => e.ItemCode, "UQ__Item__3ECC0FEAF1C23D0A").IsUnique();
+            entity.HasIndex(e => e.ItemCode, "UQ__Item__3ECC0FEAD1228037").IsUnique();
 
+            entity.Property(e => e.Id)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("(newid())");
             entity.Property(e => e.Active).HasDefaultValue(true);
+            entity.Property(e => e.CreatedBy).HasMaxLength(200);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -140,14 +163,13 @@ public partial class StoreCareDbContext : DbContext
                 .HasDefaultValue(0m)
                 .HasColumnType("decimal(5, 2)");
             entity.Property(e => e.IsFeatured).HasDefaultValue(false);
-            entity.Property(e => e.ItemCode)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-            entity.Property(e => e.ItemImage).IsUnicode(false);
+            entity.Property(e => e.ItemCode).HasMaxLength(100);
             entity.Property(e => e.ItemName).HasMaxLength(200);
+            entity.Property(e => e.ModifiedBy).HasMaxLength(200);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.StatusId).HasDefaultValue(1);
+            entity.Property(e => e.ProductId).HasMaxLength(50);
+            entity.Property(e => e.StoreId).HasMaxLength(50);
             entity.Property(e => e.TaxPercent)
                 .HasDefaultValue(0m)
                 .HasColumnType("decimal(5, 2)");
@@ -159,6 +181,7 @@ public partial class StoreCareDbContext : DbContext
 
             entity.HasOne(d => d.Status).WithMany(p => p.Items)
                 .HasForeignKey(d => d.StatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Item_StatusId");
 
             entity.HasOne(d => d.Store).WithMany(p => p.Items)
@@ -169,17 +192,28 @@ public partial class StoreCareDbContext : DbContext
 
         modelBuilder.Entity<ItemSpecificationValue>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__ItemSpec__3214EC07F0EDE289");
+            entity.HasKey(e => e.Id).HasName("PK__ItemSpec__3214EC072B5A422D");
 
             entity.ToTable("ItemSpecificationValue");
 
+            entity.HasIndex(e => e.ItemId, "IX_ItemSpecValue_ItemId");
+
+            entity.HasIndex(e => e.SpecificationId, "IX_ItemSpecValue_SpecificationId");
+
             entity.HasIndex(e => new { e.ItemId, e.SpecificationId }, "UK_Item_Spec").IsUnique();
 
+            entity.Property(e => e.Id)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("(newid())");
             entity.Property(e => e.Active).HasDefaultValue(true);
+            entity.Property(e => e.CreatedBy).HasMaxLength(200);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.ItemId).HasMaxLength(50);
+            entity.Property(e => e.ModifiedBy).HasMaxLength(200);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+            entity.Property(e => e.SpecificationId).HasMaxLength(50);
 
             entity.HasOne(d => d.Item).WithMany(p => p.ItemSpecificationValues)
                 .HasForeignKey(d => d.ItemId)
@@ -194,9 +228,11 @@ public partial class StoreCareDbContext : DbContext
 
         modelBuilder.Entity<LoginHistory>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__LoginHis__3214EC0749B7C362");
+            entity.HasKey(e => e.Id).HasName("PK__LoginHis__3214EC07EE7CD8A1");
 
             entity.ToTable("LoginHistory");
+
+            entity.HasIndex(e => e.Active, "IX_LoginHistory_Active");
 
             entity.HasIndex(e => e.LoginTime, "IX_LoginHistory_LoginTime");
 
@@ -204,32 +240,25 @@ public partial class StoreCareDbContext : DbContext
 
             entity.HasIndex(e => e.UserId, "IX_LoginHistory_UserId");
 
+            entity.Property(e => e.Id)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("(newid())");
             entity.Property(e => e.Active).HasDefaultValue(true);
             entity.Property(e => e.Browser).HasMaxLength(500);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.DeviceType)
-                .HasMaxLength(50)
-                .IsUnicode(false);
+            entity.Property(e => e.DeviceType).HasMaxLength(50);
             entity.Property(e => e.FailureReason).HasMaxLength(500);
-            entity.Property(e => e.IpAddress)
-                .HasMaxLength(50)
-                .IsUnicode(false);
+            entity.Property(e => e.IpAddress).HasMaxLength(50);
             entity.Property(e => e.LoginTime)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.LogoutTime).HasColumnType("datetime");
-            entity.Property(e => e.Platform)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-            entity.Property(e => e.SessionId)
-                .HasMaxLength(200)
-                .IsUnicode(false);
-            entity.Property(e => e.Status)
-                .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.UserAgent).HasMaxLength(500);
+            entity.Property(e => e.Platform).HasMaxLength(100);
+            entity.Property(e => e.SessionId).HasMaxLength(200);
+            entity.Property(e => e.Status).HasMaxLength(50);
+            entity.Property(e => e.UserId).HasMaxLength(50);
 
             entity.HasOne(d => d.User).WithMany(p => p.LoginHistories)
                 .HasForeignKey(d => d.UserId)
@@ -239,7 +268,7 @@ public partial class StoreCareDbContext : DbContext
 
         modelBuilder.Entity<MasterTable>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Master_T__3214EC07FE0DB62D");
+            entity.HasKey(e => e.Id).HasName("PK__Master_T__3214EC079EC6DA5D");
 
             entity.ToTable("Master_Table");
 
@@ -247,34 +276,36 @@ public partial class StoreCareDbContext : DbContext
 
             entity.HasIndex(e => e.TableName, "IX_MasterTable_TableName");
 
+            entity.HasIndex(e => e.TableValue, "IX_MasterTable_TableValue");
+
             entity.HasIndex(e => new { e.TableName, e.TableValue }, "UK_Master_TableName_Value").IsUnique();
 
             entity.Property(e => e.Active).HasDefaultValue(true);
+            entity.Property(e => e.CreatedBy).HasMaxLength(200);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.ItemDescription)
                 .HasMaxLength(500)
                 .HasColumnName("Item_Description");
+            entity.Property(e => e.ModifiedBy).HasMaxLength(200);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
-            entity.Property(e => e.TableName)
-                .HasMaxLength(100)
-                .IsUnicode(false);
+            entity.Property(e => e.TableName).HasMaxLength(100);
             entity.Property(e => e.TableSequence).HasDefaultValue(0);
-            entity.Property(e => e.TableValue)
-                .HasMaxLength(200)
-                .IsUnicode(false);
+            entity.Property(e => e.TableValue).HasMaxLength(200);
         });
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Order__3214EC0714E94F46");
+            entity.HasKey(e => e.Id).HasName("PK__Order__3214EC079306CC59");
 
             entity.ToTable("Order");
 
             entity.HasIndex(e => e.Active, "IX_Order_Active");
 
             entity.HasIndex(e => e.OrderDate, "IX_Order_OrderDate");
+
+            entity.HasIndex(e => e.OrderNumber, "IX_Order_OrderNumber");
 
             entity.HasIndex(e => e.OrderStatusId, "IX_Order_OrderStatusId");
 
@@ -284,32 +315,36 @@ public partial class StoreCareDbContext : DbContext
 
             entity.HasIndex(e => e.UserId, "IX_Order_UserId");
 
-            entity.HasIndex(e => e.OrderNumber, "UQ__Order__CAC5E7436EF27247").IsUnique();
+            entity.HasIndex(e => e.OrderNumber, "UQ__Order__CAC5E7433B542882").IsUnique();
 
+            entity.Property(e => e.Id)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("(newid())");
             entity.Property(e => e.Active).HasDefaultValue(true);
+            entity.Property(e => e.CreatedBy).HasMaxLength(200);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.DiscountAmount)
                 .HasDefaultValue(0m)
                 .HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.ModifiedBy).HasMaxLength(200);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             entity.Property(e => e.NetAmount).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.OrderDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.OrderNumber)
-                .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.OrderStatusId).HasDefaultValue(1);
-            entity.Property(e => e.PaymentStatusId).HasDefaultValue(1);
+            entity.Property(e => e.OrderNumber).HasMaxLength(50);
+            entity.Property(e => e.StoreId).HasMaxLength(50);
             entity.Property(e => e.TaxAmount)
                 .HasDefaultValue(0m)
                 .HasColumnType("decimal(18, 2)");
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.UserId).HasMaxLength(50);
 
             entity.HasOne(d => d.OrderStatus).WithMany(p => p.OrderOrderStatuses)
                 .HasForeignKey(d => d.OrderStatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Order_OrderStatusId");
 
             entity.HasOne(d => d.PaymentMode).WithMany(p => p.OrderPaymentModes)
@@ -319,6 +354,7 @@ public partial class StoreCareDbContext : DbContext
 
             entity.HasOne(d => d.PaymentStatus).WithMany(p => p.OrderPaymentStatuses)
                 .HasForeignKey(d => d.PaymentStatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Order_PaymentStatusId");
 
             entity.HasOne(d => d.Store).WithMany(p => p.Orders)
@@ -334,18 +370,29 @@ public partial class StoreCareDbContext : DbContext
 
         modelBuilder.Entity<OrderDetail>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__OrderDet__3214EC07C5B31867");
+            entity.HasKey(e => e.Id).HasName("PK__OrderDet__3214EC0751947F4C");
 
             entity.ToTable("OrderDetail");
 
+            entity.HasIndex(e => e.ItemId, "IX_OrderDetail_ItemId");
+
+            entity.HasIndex(e => e.OrderId, "IX_OrderDetail_OrderId");
+
+            entity.Property(e => e.Id)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("(newid())");
             entity.Property(e => e.Active).HasDefaultValue(true);
+            entity.Property(e => e.CreatedBy).HasMaxLength(200);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.DiscountPercent)
                 .HasDefaultValue(0m)
                 .HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.ItemId).HasMaxLength(50);
+            entity.Property(e => e.ModifiedBy).HasMaxLength(200);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+            entity.Property(e => e.OrderId).HasMaxLength(50);
             entity.Property(e => e.TotalPrice).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 2)");
 
@@ -362,7 +409,7 @@ public partial class StoreCareDbContext : DbContext
 
         modelBuilder.Entity<Product>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Product__3214EC07B7415B08");
+            entity.HasKey(e => e.Id).HasName("PK__Product__3214EC07A12FE780");
 
             entity.ToTable("Product");
 
@@ -370,22 +417,28 @@ public partial class StoreCareDbContext : DbContext
 
             entity.HasIndex(e => e.CategoryId, "IX_Product_CategoryId");
 
+            entity.HasIndex(e => e.ProductCode, "IX_Product_ProductCode");
+
+            entity.HasIndex(e => e.ProductName, "IX_Product_ProductName");
+
             entity.HasIndex(e => e.StatusId, "IX_Product_StatusId");
 
-            entity.HasIndex(e => e.ProductCode, "UQ__Product__2F4E024FDA65AE56").IsUnique();
+            entity.HasIndex(e => e.ProductCode, "UQ__Product__2F4E024F9CFA2972").IsUnique();
 
+            entity.Property(e => e.Id)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("(newid())");
             entity.Property(e => e.Active).HasDefaultValue(true);
             entity.Property(e => e.BrandName).HasMaxLength(100);
+            entity.Property(e => e.CategoryId).HasMaxLength(50);
+            entity.Property(e => e.CreatedBy).HasMaxLength(200);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.ModifiedBy).HasMaxLength(200);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
-            entity.Property(e => e.ProductCode)
-                .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.ProductImage).IsUnicode(false);
+            entity.Property(e => e.ProductCode).HasMaxLength(50);
             entity.Property(e => e.ProductName).HasMaxLength(200);
-            entity.Property(e => e.StatusId).HasDefaultValue(1);
 
             entity.HasOne(d => d.Category).WithMany(p => p.Products)
                 .HasForeignKey(d => d.CategoryId)
@@ -394,67 +447,82 @@ public partial class StoreCareDbContext : DbContext
 
             entity.HasOne(d => d.Status).WithMany(p => p.Products)
                 .HasForeignKey(d => d.StatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Product_StatusId");
         });
 
         modelBuilder.Entity<ProductCategory>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__ProductC__3214EC076C50EE63");
+            entity.HasKey(e => e.Id).HasName("PK__ProductC__3214EC07D0AB5153");
 
             entity.ToTable("ProductCategory");
 
             entity.HasIndex(e => e.Active, "IX_ProductCategory_Active");
 
+            entity.HasIndex(e => e.CategoryCode, "IX_ProductCategory_CategoryCode");
+
+            entity.HasIndex(e => e.CategoryName, "IX_ProductCategory_CategoryName");
+
             entity.HasIndex(e => e.DisplayOrder, "IX_ProductCategory_DisplayOrder");
 
             entity.HasIndex(e => e.StatusId, "IX_ProductCategory_StatusId");
 
-            entity.HasIndex(e => e.CategoryCode, "UQ__ProductC__371BA955AB07311F").IsUnique();
+            entity.HasIndex(e => e.CategoryCode, "UQ__ProductC__371BA955F532EB82").IsUnique();
 
-            entity.Property(e => e.Active).HasDefaultValue(true);
-            entity.Property(e => e.CategoryCode)
+            entity.Property(e => e.Id)
                 .HasMaxLength(50)
-                .IsUnicode(false);
+                .HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Active).HasDefaultValue(true);
+            entity.Property(e => e.CategoryCode).HasMaxLength(50);
             entity.Property(e => e.CategoryDescription).HasMaxLength(1000);
-            entity.Property(e => e.CategoryImage).IsUnicode(false);
             entity.Property(e => e.CategoryName).HasMaxLength(200);
+            entity.Property(e => e.CreatedBy).HasMaxLength(200);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.DisplayOrder).HasDefaultValue(0);
+            entity.Property(e => e.ModifiedBy).HasMaxLength(200);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
-            entity.Property(e => e.StatusId).HasDefaultValue(1);
 
             entity.HasOne(d => d.Status).WithMany(p => p.ProductCategories)
                 .HasForeignKey(d => d.StatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ProductCategory_StatusId");
         });
 
         modelBuilder.Entity<Specification>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Specific__3214EC07BAD2C6F3");
+            entity.HasKey(e => e.Id).HasName("PK__Specific__3214EC07A177B2B0");
 
             entity.ToTable("Specification");
 
-            entity.HasIndex(e => e.SpecCode, "UQ__Specific__BB4FDCAD8BBC94FA").IsUnique();
+            entity.HasIndex(e => e.ProductId, "IX_Specification_ProductId");
 
+            entity.HasIndex(e => e.SpecCode, "IX_Specification_SpecCode");
+
+            entity.HasIndex(e => e.StatusId, "IX_Specification_StatusId");
+
+            entity.HasIndex(e => e.SpecCode, "UQ__Specific__BB4FDCAD2F98D466").IsUnique();
+
+            entity.Property(e => e.Id)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("(newid())");
             entity.Property(e => e.Active).HasDefaultValue(true);
+            entity.Property(e => e.CreatedBy).HasMaxLength(200);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.DataType)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasDefaultValue("Text");
             entity.Property(e => e.DisplayOrder).HasDefaultValue(0);
             entity.Property(e => e.IsRequired).HasDefaultValue(false);
+            entity.Property(e => e.ModifiedBy).HasMaxLength(200);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
-            entity.Property(e => e.SpecCode)
-                .HasMaxLength(50)
-                .IsUnicode(false);
+            entity.Property(e => e.ProductId).HasMaxLength(50);
+            entity.Property(e => e.SpecCode).HasMaxLength(50);
             entity.Property(e => e.SpecDescription).HasMaxLength(500);
             entity.Property(e => e.SpecName).HasMaxLength(200);
-            entity.Property(e => e.StatusId).HasDefaultValue(1);
 
             entity.HasOne(d => d.Product).WithMany(p => p.Specifications)
                 .HasForeignKey(d => d.ProductId)
@@ -463,26 +531,36 @@ public partial class StoreCareDbContext : DbContext
 
             entity.HasOne(d => d.Status).WithMany(p => p.Specifications)
                 .HasForeignKey(d => d.StatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Specification_StatusId");
         });
 
         modelBuilder.Entity<StockTransaction>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__StockTra__3214EC07A7BFB09F");
+            entity.HasKey(e => e.Id).HasName("PK__StockTra__3214EC07FFA64CC8");
 
             entity.ToTable("StockTransaction");
 
+            entity.HasIndex(e => e.ItemId, "IX_StockTransaction_ItemId");
+
+            entity.HasIndex(e => e.TransactionDate, "IX_StockTransaction_TransactionDate");
+
+            entity.HasIndex(e => e.TransactionType, "IX_StockTransaction_TransactionType");
+
+            entity.Property(e => e.Id)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("(newid())");
             entity.Property(e => e.Active).HasDefaultValue(true);
+            entity.Property(e => e.CreatedBy).HasMaxLength(200);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.ItemId).HasMaxLength(50);
             entity.Property(e => e.Remarks).HasMaxLength(500);
             entity.Property(e => e.TransactionDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.TransactionType)
-                .HasMaxLength(50)
-                .IsUnicode(false);
+            entity.Property(e => e.TransactionType).HasMaxLength(50);
 
             entity.HasOne(d => d.Item).WithMany(p => p.StockTransactions)
                 .HasForeignKey(d => d.ItemId)
@@ -492,7 +570,7 @@ public partial class StoreCareDbContext : DbContext
 
         modelBuilder.Entity<Store>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Store__3214EC07252171F6");
+            entity.HasKey(e => e.Id).HasName("PK__Store__3214EC073EDB19DF");
 
             entity.ToTable("Store");
 
@@ -502,35 +580,35 @@ public partial class StoreCareDbContext : DbContext
 
             entity.HasIndex(e => e.StatusId, "IX_Store_StatusId");
 
-            entity.HasIndex(e => e.StoreCode, "UQ__Store__02A384F8C36A0614").IsUnique();
+            entity.HasIndex(e => e.StoreCode, "IX_Store_StoreCode");
 
+            entity.HasIndex(e => e.StoreCode, "UQ__Store__02A384F89F7EFD3F").IsUnique();
+
+            entity.Property(e => e.Id)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("(newid())");
             entity.Property(e => e.Active).HasDefaultValue(true);
             entity.Property(e => e.Address).HasMaxLength(500);
-            entity.Property(e => e.ContactNumber)
-                .HasMaxLength(15)
-                .IsUnicode(false);
+            entity.Property(e => e.ContactNumber).HasMaxLength(15);
+            entity.Property(e => e.CreatedBy).HasMaxLength(200);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Email)
-                .HasMaxLength(100)
-                .IsUnicode(false);
+            entity.Property(e => e.Email).HasMaxLength(100);
+            entity.Property(e => e.ModifiedBy).HasMaxLength(200);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
-            entity.Property(e => e.StatusId).HasDefaultValue(1);
-            entity.Property(e => e.StoreCode)
-                .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.StoreLogo).IsUnicode(false);
+            entity.Property(e => e.StoreCode).HasMaxLength(50);
             entity.Property(e => e.StoreName).HasMaxLength(200);
 
             entity.HasOne(d => d.Status).WithMany(p => p.Stores)
                 .HasForeignKey(d => d.StatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Store_StatusId");
         });
 
         modelBuilder.Entity<StoreProductAssignment>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__StorePro__3214EC07FDE20F10");
+            entity.HasKey(e => e.Id).HasName("PK__StorePro__3214EC07CE97838D");
 
             entity.ToTable("StoreProductAssignment");
 
@@ -542,13 +620,19 @@ public partial class StoreCareDbContext : DbContext
 
             entity.HasIndex(e => new { e.StoreId, e.ProductId }, "UK_Store_Product").IsUnique();
 
+            entity.Property(e => e.Id)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("(newid())");
             entity.Property(e => e.Active).HasDefaultValue(true);
             entity.Property(e => e.CanManage).HasDefaultValue(true);
+            entity.Property(e => e.CreatedBy).HasMaxLength(200);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.ModifiedBy).HasMaxLength(200);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
-            entity.Property(e => e.StatusId).HasDefaultValue(1);
+            entity.Property(e => e.ProductId).HasMaxLength(50);
+            entity.Property(e => e.StoreId).HasMaxLength(50);
 
             entity.HasOne(d => d.Product).WithMany(p => p.StoreProductAssignments)
                 .HasForeignKey(d => d.ProductId)
@@ -557,6 +641,7 @@ public partial class StoreCareDbContext : DbContext
 
             entity.HasOne(d => d.Status).WithMany(p => p.StoreProductAssignments)
                 .HasForeignKey(d => d.StatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_StoreProductAssignment_StatusId");
 
             entity.HasOne(d => d.Store).WithMany(p => p.StoreProductAssignments)
@@ -567,7 +652,7 @@ public partial class StoreCareDbContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__User__3214EC0794E6C696");
+            entity.HasKey(e => e.Id).HasName("PK__User__3214EC07C98C0AAC");
 
             entity.ToTable("User");
 
@@ -577,35 +662,36 @@ public partial class StoreCareDbContext : DbContext
 
             entity.HasIndex(e => e.Email, "IX_User_Email");
 
+            entity.HasIndex(e => e.FullName, "IX_User_FullName");
+
             entity.HasIndex(e => e.RoleId, "IX_User_RoleId");
 
             entity.HasIndex(e => e.StatusId, "IX_User_StatusId");
 
             entity.HasIndex(e => e.StoreId, "IX_User_StoreId");
 
-            entity.HasIndex(e => e.UserCode, "UQ__User__1DF52D0C4E98E636").IsUnique();
+            entity.HasIndex(e => e.UserCode, "IX_User_UserCode");
 
-            entity.HasIndex(e => e.Email, "UQ__User__A9D1053433697EBD").IsUnique();
+            entity.HasIndex(e => e.UserCode, "UQ__User__1DF52D0CC94454BA").IsUnique();
 
+            entity.HasIndex(e => e.Email, "UQ__User__A9D10534C3831BC3").IsUnique();
+
+            entity.Property(e => e.Id)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("(newid())");
             entity.Property(e => e.Active).HasDefaultValue(true);
+            entity.Property(e => e.CreatedBy).HasMaxLength(200);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Email)
-                .HasMaxLength(100)
-                .IsUnicode(false);
+            entity.Property(e => e.Email).HasMaxLength(100);
             entity.Property(e => e.FullName).HasMaxLength(200);
             entity.Property(e => e.LastLogin).HasColumnType("datetime");
+            entity.Property(e => e.ModifiedBy).HasMaxLength(200);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
-            entity.Property(e => e.PasswordHash).IsUnicode(false);
-            entity.Property(e => e.Phone)
-                .HasMaxLength(15)
-                .IsUnicode(false);
-            entity.Property(e => e.ProfilePicture).IsUnicode(false);
-            entity.Property(e => e.StatusId).HasDefaultValue(1);
-            entity.Property(e => e.UserCode)
-                .HasMaxLength(50)
-                .IsUnicode(false);
+            entity.Property(e => e.Phone).HasMaxLength(15);
+            entity.Property(e => e.StoreId).HasMaxLength(50);
+            entity.Property(e => e.UserCode).HasMaxLength(50);
 
             entity.HasOne(d => d.Role).WithMany(p => p.UserRoles)
                 .HasForeignKey(d => d.RoleId)

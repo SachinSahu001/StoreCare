@@ -5,11 +5,11 @@ namespace StoreCare.Server.Models;
 
 public partial class OrderDetail
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = null!;
 
-    public int OrderId { get; set; }
+    public string OrderId { get; set; } = null!;
 
-    public int ItemId { get; set; }
+    public string ItemId { get; set; } = null!;
 
     public int Quantity { get; set; }
 
@@ -19,11 +19,11 @@ public partial class OrderDetail
 
     public decimal TotalPrice { get; set; }
 
-    public int CreatedBy { get; set; }
+    public string CreatedBy { get; set; } = null!;
 
     public DateTime? CreatedDate { get; set; }
 
-    public int? ModifiedBy { get; set; }
+    public string? ModifiedBy { get; set; }
 
     public DateTime? ModifiedDate { get; set; }
 

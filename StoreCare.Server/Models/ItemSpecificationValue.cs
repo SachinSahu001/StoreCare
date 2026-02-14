@@ -5,19 +5,19 @@ namespace StoreCare.Server.Models;
 
 public partial class ItemSpecificationValue
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = null!;
 
-    public int ItemId { get; set; }
+    public string ItemId { get; set; } = null!;
 
-    public int SpecificationId { get; set; }
+    public string SpecificationId { get; set; } = null!;
 
     public string? SpecValue { get; set; }
 
-    public int CreatedBy { get; set; }
+    public string CreatedBy { get; set; } = null!;
 
     public DateTime? CreatedDate { get; set; }
 
-    public int? ModifiedBy { get; set; }
+    public string? ModifiedBy { get; set; }
 
     public DateTime? ModifiedDate { get; set; }
 
