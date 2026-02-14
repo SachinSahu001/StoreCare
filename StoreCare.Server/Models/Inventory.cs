@@ -5,9 +5,9 @@ namespace StoreCare.Server.Models;
 
 public partial class Inventory
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = null!;
 
-    public int ItemId { get; set; }
+    public string ItemId { get; set; } = null!;
 
     public int? CurrentStock { get; set; }
 
@@ -19,11 +19,11 @@ public partial class Inventory
 
     public DateTime? LastStockOutDate { get; set; }
 
-    public int CreatedBy { get; set; }
+    public string CreatedBy { get; set; } = null!;
 
     public DateTime? CreatedDate { get; set; }
 
-    public int? ModifiedBy { get; set; }
+    public string? ModifiedBy { get; set; }
 
     public DateTime? ModifiedDate { get; set; }
 

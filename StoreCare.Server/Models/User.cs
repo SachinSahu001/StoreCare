@@ -5,7 +5,7 @@ namespace StoreCare.Server.Models;
 
 public partial class User
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = null!;
 
     public string UserCode { get; set; } = null!;
 
@@ -19,7 +19,7 @@ public partial class User
 
     public int RoleId { get; set; }
 
-    public int? StoreId { get; set; }
+    public string? StoreId { get; set; }
 
     public string? ProfilePicture { get; set; }
 
@@ -27,11 +27,11 @@ public partial class User
 
     public DateTime? LastLogin { get; set; }
 
-    public int CreatedBy { get; set; }
+    public string CreatedBy { get; set; } = null!;
 
     public DateTime? CreatedDate { get; set; }
 
-    public int? ModifiedBy { get; set; }
+    public string? ModifiedBy { get; set; }
 
     public DateTime? ModifiedDate { get; set; }
 

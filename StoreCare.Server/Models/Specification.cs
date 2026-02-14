@@ -5,7 +5,7 @@ namespace StoreCare.Server.Models;
 
 public partial class Specification
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = null!;
 
     public string SpecCode { get; set; } = null!;
 
@@ -17,17 +17,17 @@ public partial class Specification
 
     public bool? IsRequired { get; set; }
 
-    public int ProductId { get; set; }
+    public string ProductId { get; set; } = null!;
 
     public int? DisplayOrder { get; set; }
 
-    public int? StatusId { get; set; }
+    public int StatusId { get; set; }
 
-    public int CreatedBy { get; set; }
+    public string CreatedBy { get; set; } = null!;
 
     public DateTime? CreatedDate { get; set; }
 
-    public int? ModifiedBy { get; set; }
+    public string? ModifiedBy { get; set; }
 
     public DateTime? ModifiedDate { get; set; }
 
@@ -37,5 +37,5 @@ public partial class Specification
 
     public virtual Product Product { get; set; } = null!;
 
-    public virtual MasterTable? Status { get; set; }
+    public virtual MasterTable Status { get; set; } = null!;
 }

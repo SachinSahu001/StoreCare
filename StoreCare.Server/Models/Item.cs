@@ -5,7 +5,7 @@ namespace StoreCare.Server.Models;
 
 public partial class Item
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = null!;
 
     public string ItemCode { get; set; } = null!;
 
@@ -15,9 +15,9 @@ public partial class Item
 
     public string? ItemImage { get; set; }
 
-    public int ProductId { get; set; }
+    public string ProductId { get; set; } = null!;
 
-    public int StoreId { get; set; }
+    public string StoreId { get; set; } = null!;
 
     public decimal Price { get; set; }
 
@@ -25,15 +25,15 @@ public partial class Item
 
     public decimal? TaxPercent { get; set; }
 
-    public int? StatusId { get; set; }
+    public int StatusId { get; set; }
 
     public bool? IsFeatured { get; set; }
 
-    public int CreatedBy { get; set; }
+    public string CreatedBy { get; set; } = null!;
 
     public DateTime? CreatedDate { get; set; }
 
-    public int? ModifiedBy { get; set; }
+    public string? ModifiedBy { get; set; }
 
     public DateTime? ModifiedDate { get; set; }
 
@@ -49,7 +49,7 @@ public partial class Item
 
     public virtual Product Product { get; set; } = null!;
 
-    public virtual MasterTable? Status { get; set; }
+    public virtual MasterTable Status { get; set; } = null!;
 
     public virtual ICollection<StockTransaction> StockTransactions { get; set; } = new List<StockTransaction>();
 

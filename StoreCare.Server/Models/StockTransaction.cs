@@ -5,9 +5,9 @@ namespace StoreCare.Server.Models;
 
 public partial class StockTransaction
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = null!;
 
-    public int ItemId { get; set; }
+    public string ItemId { get; set; } = null!;
 
     public string? TransactionType { get; set; }
 
@@ -23,7 +23,7 @@ public partial class StockTransaction
 
     public DateTime? TransactionDate { get; set; }
 
-    public int CreatedBy { get; set; }
+    public string CreatedBy { get; set; } = null!;
 
     public DateTime? CreatedDate { get; set; }
 

@@ -5,9 +5,9 @@ namespace StoreCare.Server.Models;
 
 public partial class LoginHistory
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = null!;
 
-    public int UserId { get; set; }
+    public string UserId { get; set; } = null!;
 
     public DateTime? LoginTime { get; set; }
 

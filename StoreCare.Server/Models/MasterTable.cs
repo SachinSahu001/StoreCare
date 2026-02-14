@@ -15,11 +15,11 @@ public partial class MasterTable
 
     public string? ItemDescription { get; set; }
 
-    public int CreatedBy { get; set; }
+    public string CreatedBy { get; set; } = null!;
 
     public DateTime? CreatedDate { get; set; }
 
-    public int? ModifiedBy { get; set; }
+    public string? ModifiedBy { get; set; }
 
     public DateTime? ModifiedDate { get; set; }
 

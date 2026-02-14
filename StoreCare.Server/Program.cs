@@ -4,7 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using StoreCare.Server.Data;
+using StoreCare.Server.Middlewares;
 using StoreCare.Server.Models;
+using StoreCare.Server.Services;
 using System.Security.Claims;
 using System.Text;
 
@@ -17,7 +19,7 @@ builder.Services.AddDbContext<StoreCareDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ==============================
-// 2. JWT AUTHENTICATION - FIXED
+// 2. JWT AUTHENTICATION - FIXED FOR BOTH HTTP/HTTPS
 // ==============================
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"] ??
@@ -30,7 +32,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    options.RequireHttpsMetadata = false;
+    options.RequireHttpsMetadata = false; // Set to false to allow HTTP
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -42,16 +44,15 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtSettings["Audience"],
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero,
-        // CRITICAL FIX: Map both role claim types
         RoleClaimType = ClaimTypes.Role,
         NameClaimType = ClaimTypes.NameIdentifier
     };
 
-    // FIXED: Better token extraction
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
         {
+            // Check for token in Authorization header
             var authorization = context.Request.Headers["Authorization"].ToString();
 
             if (!string.IsNullOrEmpty(authorization) &&
@@ -60,64 +61,115 @@ builder.Services.AddAuthentication(options =>
                 context.Token = authorization["Bearer ".Length..].Trim();
             }
 
+            // Also check for token in query string (for WebSockets or Swagger HTTP)
+            if (string.IsNullOrEmpty(context.Token))
+            {
+                context.Token = context.Request.Query["access_token"];
+            }
+
             return Task.CompletedTask;
+        },
+        OnTokenValidated = async context =>
+        {
+            var claimsIdentity = context.Principal?.Identity as ClaimsIdentity;
+            var roleClaims = claimsIdentity?.FindAll(ClaimTypes.Role).ToList();
+
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogInformation("Token validated on {Scheme}://{Host}",
+                context.HttpContext.Request.Scheme,
+                context.HttpContext.Request.Host);
+
+            if (roleClaims != null)
+            {
+                foreach (var claim in roleClaims)
+                {
+                    logger.LogInformation("- Role: {Role}", claim.Value);
+                }
+            }
+
+            // Verify user exists and is active
+            var dbContext = context.HttpContext.RequestServices.GetRequiredService<StoreCareDbContext>();
+            var userIdClaim = context.Principal?.FindFirst("UserId") ??
+                 context.Principal?.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim != null)
+            {
+                var userId = userIdClaim.Value;
+                var user = await dbContext.Users
+                    .Include(u => u.Role)
+                    .FirstOrDefaultAsync(u => u.Id == userId && u.Active == true);
+
+                if (user == null)
+                {
+                    logger.LogWarning("User {UserId} not found or inactive", userId);
+                    context.Fail("User not found or inactive");
+                    return;
+                }
+            }
         },
         OnAuthenticationFailed = context =>
         {
-            Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogError(context.Exception, "Authentication failed on {Scheme}://{Host}: {Message}",
+                context.HttpContext.Request.Scheme,
+                context.HttpContext.Request.Host,
+                context.Exception.Message);
             return Task.CompletedTask;
         },
-        OnTokenValidated = context =>
+        OnChallenge = context =>
         {
-            Console.WriteLine("Token validated successfully");
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogWarning("Authentication challenge on {Scheme}://{Host}: {Error}",
+                context.HttpContext.Request.Scheme,
+                context.HttpContext.Request.Host,
+                context.ErrorDescription);
             return Task.CompletedTask;
         }
     };
 });
 
 // ==============================
-// 3. AUTHORIZATION POLICIES
+// 3. AUTHORIZATION
 // ==============================
 builder.Services.AddAuthorization(options =>
 {
-    // Define role-based policies as per your table
-    options.AddPolicy("Customer", policy => policy.RequireRole("Customer"));
-    options.AddPolicy("StoreAdmin", policy => policy.RequireRole("StoreAdmin"));
-    options.AddPolicy("SuperAdmin", policy => policy.RequireRole("SuperAdmin"));
-    options.AddPolicy("All", policy => policy.RequireAuthenticatedUser());
+    // Simple role-based authorization
 });
 
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
+
 // ==============================
-// 4. CORS CONFIGURATION
+// 4. CORS CONFIGURATION - FIXED FOR BOTH ORIGINS
 // ==============================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy => policy
-        .SetIsOriginAllowed(_ => true)
+        .SetIsOriginAllowed(origin => true) // Allow any origin
         .AllowAnyHeader()
         .AllowAnyMethod()
-        .AllowCredentials());
+        .AllowCredentials()); // Important for authentication
 });
 
 // ==============================
-// 5. CONTROLLERS & SWAGGER
+// 5. CONTROLLERS & SWAGGER - FIXED FOR MULTIPLE URLs
 // ==============================
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// FIXED: Swagger with proper JWT configuration
+// Swagger with multiple URL support
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "StoreCare API",
         Version = "v1",
-        Description = "StoreCare Authentication API"
+        Description = "StoreCare Authentication API with Role-Based Authorization"
     });
 
+    // Add JWT Authentication to Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token. Example: 'Bearer eyJhbGciOiJIUzI1NiIs...'",
+        Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer eyJhbGciOiJIUzI1NiIs...'",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
@@ -138,9 +190,32 @@ builder.Services.AddSwaggerGen(c =>
             Array.Empty<string>()
         }
     });
+
+    // Support multiple server URLs in Swagger
+    c.AddServer(new OpenApiServer
+    {
+        Url = "https://localhost:7066",
+        Description = "HTTPS"
+    });
+    c.AddServer(new OpenApiServer
+    {
+        Url = "http://localhost:5041",
+        Description = "HTTP"
+    });
 });
 
+// ==============================
+// FILE SERVICE REGISTRATION
+// ==============================
+builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddHttpContextAccessor();
+
+// Add logging
+builder.Services.AddLogging(logging =>
+{
+    logging.AddConsole();
+    logging.AddDebug();
+});
 
 var app = builder.Build();
 
@@ -150,7 +225,8 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<StoreCareDbContext>();
-    await SeedData(context);
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    await SeedData(context, logger);
 }
 
 // ==============================
@@ -159,26 +235,37 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "StoreCare API V1");
+        c.RoutePrefix = "swagger";
+    });
     app.UseDeveloperExceptionPage();
 }
 
-app.UseHttpsRedirection();
+// Don't force HTTPS in development for Swagger HTTP access
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseCors("AllowAll");
-app.UseAuthentication(); // IMPORTANT: This must be before Authorization
+
+// CRITICAL: Authentication MUST come before Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-// Test endpoint to verify API is running
+// Test endpoint
 app.MapGet("/", () => "StoreCare API is running!");
 
 app.Run();
 
 // ==============================
-// SEEDING METHOD - FIXED
+// SEEDING METHOD
 // ==============================
-async Task SeedData(StoreCareDbContext context)
+async Task SeedData(StoreCareDbContext context, ILogger logger)
 {
     await context.Database.EnsureCreatedAsync();
 
@@ -195,12 +282,13 @@ async Task SeedData(StoreCareDbContext context)
             // Statuses
             new() { TableName = "Status", TableValue = "Active", Active = true },
             new() { TableName = "Status", TableValue = "Suspended", Active = true },
-            new() { TableName = "Status", TableValue = "Inactive", Active = true }
+            new() { TableName = "Status", TableValue = "Inactive", Active = true },
+            new() { TableName = "Status", TableValue = "Blocked", Active = true }
         };
 
         context.MasterTables.AddRange(masterData);
         await context.SaveChangesAsync();
-        Console.WriteLine("Master tables seeded.");
+        logger.LogInformation("Master tables seeded.");
     }
 
     // Seed SuperAdmin
@@ -224,20 +312,20 @@ async Task SeedData(StoreCareDbContext context)
                 RoleId = superAdminRole.Id,
                 StatusId = activeStatus.Id,
                 CreatedDate = DateTime.UtcNow,
-                CreatedBy = 0,
+                CreatedBy = "System",
                 ModifiedDate = DateTime.UtcNow,
-                ModifiedBy = 0,
+                ModifiedBy = "System",
                 Active = true
             };
 
             context.Users.Add(admin);
             await context.SaveChangesAsync();
 
-            Console.WriteLine("=================================");
-            Console.WriteLine("SuperAdmin seeded successfully!");
-            Console.WriteLine("Email: admin@storecare.com");
-            Console.WriteLine("Password: Admin@123");
-            Console.WriteLine("=================================");
+            logger.LogInformation("=================================");
+            logger.LogInformation("SuperAdmin seeded successfully!");
+            logger.LogInformation("Email: admin@storecare.com");
+            logger.LogInformation("Password: Admin@123");
+            logger.LogInformation("=================================");
         }
     }
 }
