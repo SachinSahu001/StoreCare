@@ -1,5 +1,4 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 interface WeatherForecast {
   date: string;
@@ -14,25 +13,6 @@ interface WeatherForecast {
   standalone: false,
   styleUrl: './app.component.css'
 })
-export class AppComponent implements OnInit {
-  public forecasts: WeatherForecast[] = [];
+export class AppComponent {
 
-  constructor(private http: HttpClient) {}
-
-  ngOnInit() {
-    this.getForecasts();
-  }
-
-  getForecasts() {
-    this.http.get<WeatherForecast[]>('/weatherforecast').subscribe(
-      (result) => {
-        this.forecasts = result;
-      },
-      (error) => {
-        console.error(error);
-      }
-    );
-  }
-
-  title = 'storecare.client';
 }

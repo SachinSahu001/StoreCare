@@ -1,0 +1,80 @@
+<div class="home-container">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Welcome to StoreCare</h1>
+      <p class="hero-subtitle">Your One-Stop Shop for Quality Products and Services</p>
+      <div class="hero-buttons">
+        <a href="#" class="btn btn-primary">Shop Now</a>
+        <a href="#" class="btn btn-outline">Learn More</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Categories -->
+  <section class="categories-section">
+    <h2 class="section-title">Shop by Category</h2>
+    <div class="categories-grid">
+      <div class="category-card" *ngFor="let category of categories">
+        <div class="category-icon">
+          <i [class]="category.icon"></i>
+        </div>
+        <h3>{{ category.name }}</h3>
+        <p>{{ category.items }} items</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Products -->
+  <section class="products-section">
+    <h2 class="section-title">Featured Products</h2>
+    <div class="products-grid">
+      <div class="product-card" *ngFor="let product of featuredProducts">
+        <div class="product-image">
+          <img [src]="product.image" [alt]="product.name">
+          <div class="product-overlay">
+            <button class="quick-view">Quick View</button>
+          </div>
+        </div>
+        <div class="product-info">
+          <h3>{{ product.name }}</h3>
+          <p class="product-price">${{ product.price }}</p>
+          <div class="product-rating">
+            <i class="fas fa-star" *ngFor="let star of [1,2,3,4,5]"></i>
+            <span>({{ product.reviews }})</span>
+          </div>
+          <button class="add-to-cart">
+            <i class="fas fa-shopping-cart"></i>
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features-section">
+    <div class="features-grid">
+      <div class="feature-card">
+        <i class="fas fa-truck feature-icon"></i>
+        <h3>Free Shipping</h3>
+        <p>On orders over $50</p>
+      </div>
+      <div class="feature-card">
+        <i class="fas fa-undo feature-icon"></i>
+        <h3>30 Days Return</h3>
+        <p>Money back guarantee</p>
+      </div>
+      <div class="feature-card">
+        <i class="fas fa-lock feature-icon"></i>
+        <h3>Secure Payment</h3>
+        <p>100% secure transactions</p>
+      </div>
+      <div class="feature-card">
+        <i class="fas fa-headset feature-icon"></i>
+        <h3>24/7 Support</h3>
+        <p>Dedicated customer service</p>
+      </div>
+    </div>
+  </section>
+</div>
