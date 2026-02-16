@@ -1,0 +1,47 @@
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="nav-brand">
+      <a routerLink="/" class="brand-logo">
+        <i class="fas fa-store"></i>
+        StoreCare
+      </a>
+    </div>
+
+    <div class="nav-menu" [class.active]="isMenuOpen">
+      <ul class="nav-links">
+        <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a></li>
+        <li><a routerLink="/products" routerLinkActive="active">Products</a></li>
+        <li><a routerLink="/Register" >Register</a></li>
+        <li><a routerLink="/about" routerLinkActive="active">About</a></li>
+        <li><a routerLink="/contact" routerLinkActive="active">Contact</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <div class="search-box">
+          <input type="text" placeholder="Search products...">
+          <button class="search-btn">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+
+        <div class="action-icons">
+          <a href="#" class="icon-link">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="badge">3</span>
+          </a>
+          <a href="#" class="icon-link">
+            <i class="far fa-heart"></i>
+            <span class="badge">2</span>
+          </a>
+          <a href="#" class="icon-link">
+            <i class="far fa-user"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-toggle" (click)="toggleMenu()">
+      <i class="fas" [class.fa-bars]="!isMenuOpen" [class.fa-times]="isMenuOpen"></i>
+    </div>
+  </div>
+</nav>
