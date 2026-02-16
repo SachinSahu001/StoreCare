@@ -46,9 +46,9 @@ public partial class StoreCareDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=DESKTOP-LQ65V9C;Database=StoreCareDB;Trusted_Connection=True;TrustServerCertificate=True;");
+//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+//        => optionsBuilder.UseSqlServer("Server=DESKTOP-LQ65V9C;Database=StoreCareDB;Trusted_Connection=True;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -435,10 +435,12 @@ public partial class StoreCareDbContext : DbContext
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.IsFeatured).HasDefaultValue(false);
             entity.Property(e => e.ModifiedBy).HasMaxLength(200);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             entity.Property(e => e.ProductCode).HasMaxLength(50);
             entity.Property(e => e.ProductName).HasMaxLength(200);
+            entity.Property(e => e.ViewCount).HasDefaultValue(0);
 
             entity.HasOne(d => d.Category).WithMany(p => p.Products)
                 .HasForeignKey(d => d.CategoryId)
@@ -481,6 +483,8 @@ public partial class StoreCareDbContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.DisplayOrder).HasDefaultValue(0);
+            entity.Property(e => e.IconClass).HasMaxLength(100);
+            entity.Property(e => e.IsPopular).HasDefaultValue(false);
             entity.Property(e => e.ModifiedBy).HasMaxLength(200);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
 
@@ -590,13 +594,23 @@ public partial class StoreCareDbContext : DbContext
             entity.Property(e => e.Active).HasDefaultValue(true);
             entity.Property(e => e.Address).HasMaxLength(500);
             entity.Property(e => e.ContactNumber).HasMaxLength(15);
+            entity.Property(e => e.ContactPersonEmail).HasMaxLength(100);
+            entity.Property(e => e.ContactPersonName).HasMaxLength(200);
+            entity.Property(e => e.ContactPersonPhone).HasMaxLength(15);
             entity.Property(e => e.CreatedBy).HasMaxLength(200);
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.Email).HasMaxLength(100);
+            entity.Property(e => e.Gstnumber)
+                .HasMaxLength(50)
+                .HasColumnName("GSTNumber");
+            entity.Property(e => e.LicenseNumber).HasMaxLength(100);
             entity.Property(e => e.ModifiedBy).HasMaxLength(200);
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
+            entity.Property(e => e.Pannumber)
+                .HasMaxLength(50)
+                .HasColumnName("PANNumber");
             entity.Property(e => e.StoreCode).HasMaxLength(50);
             entity.Property(e => e.StoreName).HasMaxLength(200);
 

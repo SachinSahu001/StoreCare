@@ -31,6 +31,20 @@ public partial class Store
 
     public bool? Active { get; set; }
 
+    public string? Gstnumber { get; set; }
+
+    public string? Pannumber { get; set; }
+
+    public string? ContactPersonName { get; set; }
+
+    public string? ContactPersonPhone { get; set; }
+
+    public string? ContactPersonEmail { get; set; }
+
+    public string? LicenseNumber { get; set; }
+
+    public DateOnly? EstablishedDate { get; set; }
+
     public virtual ICollection<Item> Items { get; set; } = new List<Item>();
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
