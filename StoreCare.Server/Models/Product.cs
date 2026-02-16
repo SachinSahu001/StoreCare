@@ -31,6 +31,10 @@ public partial class Product
 
     public bool? Active { get; set; }
 
+    public bool? IsFeatured { get; set; }
+
+    public int? ViewCount { get; set; }
+
     public virtual ProductCategory Category { get; set; } = null!;
 
     public virtual ICollection<Item> Items { get; set; } = new List<Item>();

@@ -29,6 +29,10 @@ public partial class ProductCategory
 
     public bool? Active { get; set; }
 
+    public bool? IsPopular { get; set; }
+
+    public string? IconClass { get; set; }
+
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 
     public virtual MasterTable Status { get; set; } = null!;
