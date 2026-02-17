@@ -1,3 +1,8 @@
-<app-navbar></app-navbar>
+<!-- Navbar - sirf showLayout true hone par dikhega -->
+<app-navbar *ngIf="showLayout"></app-navbar>
+
+<!-- Router outlet - har jagah dikhega -->
 <router-outlet></router-outlet>
-<app-footer></app-footer>
+
+<!-- Footer - sirf showLayout true hone par dikhega -->
+<app-footer *ngIf="showLayout"></app-footer>

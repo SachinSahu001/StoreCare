@@ -1,0 +1,15 @@
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    min-width: 400px;
+    padding-top: 10px;
+}
+
+.full-width {
+    grid-column: span 2;
+}
+
+mat-form-field {
+    width: 100%;
+}

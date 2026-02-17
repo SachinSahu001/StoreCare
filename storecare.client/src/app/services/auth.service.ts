@@ -10,6 +10,8 @@ export interface RegisterRequest {
   phone: string;
   password: string;
   confirmPassword: string;
+  role?: string;
+  storeId?: string;
 }
 
 export interface LoginRequest {
@@ -77,6 +79,23 @@ export class AuthService {
     }).pipe(
       timeout(30000), // 30 seconds timeout
       tap(response => console.log('Registration response:', response)),
+      catchError(this.handleError)
+    );
+  }
+
+  // ==================== USER MANAGEMENT ====================
+  getUsers(role?: string): Observable<UserProfile[]> {
+    let url = `${this.apiUrl}/users`;
+    if (role) {
+      url += `?role=${role}`;
+    }
+    return this.http.get<UserProfile[]>(url).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  toggleUserStatus(userId: string, active: boolean): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/users/${userId}/toggle-status`, { active }).pipe(
       catchError(this.handleError)
     );
   }
@@ -211,13 +230,13 @@ export class AuthService {
     console.log('Redirecting based on role:', role);
     switch (role) {
       case 'SuperAdmin':
-        this.router.navigate(['/admin']);
+        this.router.navigate(['/dashboard/superadmin']);
         break;
       case 'StoreAdmin':
-        this.router.navigate(['/store']);
+        this.router.navigate(['/dashboard/storeadmin']);
         break;
       case 'Customer':
-        this.router.navigate(['/']);
+        this.router.navigate(['/dashboard/customer']);
         break;
       default:
         this.router.navigate(['/']);

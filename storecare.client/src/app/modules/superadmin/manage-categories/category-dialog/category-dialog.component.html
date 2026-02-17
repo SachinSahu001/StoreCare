@@ -1,0 +1,41 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Category' : 'New Category' }}</h2>
+<mat-dialog-content [formGroup]="categoryForm">
+    <div class="form-container">
+        <mat-form-field appearance="outline">
+            <mat-label>Category Name</mat-label>
+            <input matInput formControlName="categoryName" placeholder="Ex. Electronics">
+            <mat-error *ngIf="categoryForm.get('categoryName')?.hasError('required')">
+                Name is required
+            </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Category Code</mat-label>
+            <input matInput formControlName="categoryCode" placeholder="Ex. CAT001">
+            <mat-error *ngIf="categoryForm.get('categoryCode')?.hasError('required')">
+                Code is required
+            </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" rows="3"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Image URL</mat-label>
+            <input matInput formControlName="imageUrl" placeholder="https://example.com/image.png">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Display Order</mat-label>
+            <input matInput type="number" formControlName="displayOrder">
+        </mat-form-field>
+
+        <mat-checkbox formControlName="active" color="primary">Active</mat-checkbox>
+    </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancel</button>
+    <button mat-raised-button color="primary" (click)="onSave()" [disabled]="categoryForm.invalid">Save</button>
+</mat-dialog-actions>

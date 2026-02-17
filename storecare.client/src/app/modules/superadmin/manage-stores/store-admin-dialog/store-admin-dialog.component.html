@@ -1,0 +1,41 @@
+<h2 mat-dialog-title>Create Admin for {{ data.storeName }}</h2>
+<mat-dialog-content [formGroup]="adminForm">
+    <div class="form-grid">
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Full Name</mat-label>
+            <input matInput formControlName="fullName" placeholder="Ex. John Doe">
+            <mat-error *ngIf="adminForm.get('fullName')?.hasError('required')">Name is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" placeholder="Ex. admin@store.com">
+            <mat-error *ngIf="adminForm.get('email')?.hasError('email')">Invalid email</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Phone</mat-label>
+            <input matInput formControlName="phone" placeholder="Ex. 9876543210">
+            <mat-error *ngIf="adminForm.get('phone')?.hasError('required')">Phone is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" formControlName="password">
+            <mat-error *ngIf="adminForm.get('password')?.hasError('minlength')">Min 6 chars</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Confirm Password</mat-label>
+            <input matInput type="password" formControlName="confirmPassword">
+            <mat-error *ngIf="adminForm.hasError('mismatch')">Passwords do not match</mat-error>
+        </mat-form-field>
+    </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()" [disabled]="isLoading">Cancel</button>
+    <button mat-raised-button color="primary" (click)="onSave()" [disabled]="adminForm.invalid || isLoading">
+        <mat-spinner diameter="20" *ngIf="isLoading" style="display:inline-block; margin-right: 8px"></mat-spinner>
+        Create Admin
+    </button>
+</mat-dialog-actions>

@@ -36,7 +36,7 @@ const routes: Routes = [
       // SuperAdmin Routes
       {
         path: 'superadmin',
-        component: SuperadminComponent,
+        loadChildren: () => import('./modules/superadmin/superadmin.module').then(m => m.SuperadminModule),
         canActivate: [AuthGuard],
         data: { role: 'SuperAdmin', title: 'SuperAdmin Dashboard' }
       },
@@ -62,9 +62,8 @@ const routes: Routes = [
   // Direct role-based routes (alternative to dashboard layout)
   {
     path: 'admin',
-    component: SuperadminComponent,
-    canActivate: [AuthGuard],
-    data: { role: 'SuperAdmin', title: 'Admin Dashboard' }
+    redirectTo: 'dashboard/superadmin',
+    pathMatch: 'full'
   },
   {
     path: 'store',

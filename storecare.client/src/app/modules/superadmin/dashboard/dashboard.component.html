@@ -1,0 +1,68 @@
+<div class="dashboard-container">
+  <div class="header-section">
+    <h1>SuperAdmin Dashboard</h1>
+    <p>Overview of system statistics</p>
+  </div>
+
+  <div *ngIf="loading" class="loading-spinner">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+
+  <div *ngIf="!loading && stats" class="stats-grid">
+    <!-- Stores Card -->
+    <mat-card class="stat-card">
+      <mat-card-header>
+        <div mat-card-avatar class="stat-icon store-icon">
+          <mat-icon>store</mat-icon>
+        </div>
+        <mat-card-title>Stores</mat-card-title>
+        <mat-card-subtitle>Total Registered</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <h2 class="stat-value">{{ stats.totalStores || 0 }}</h2>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Products Card -->
+    <mat-card class="stat-card">
+      <mat-card-header>
+        <div mat-card-avatar class="stat-icon product-icon">
+          <mat-icon>inventory_2</mat-icon>
+        </div>
+        <mat-card-title>Products</mat-card-title>
+        <mat-card-subtitle>Total Catalog</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <h2 class="stat-value">{{ stats.totalProducts || 0 }}</h2>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Categories Card -->
+    <mat-card class="stat-card">
+      <mat-card-header>
+        <div mat-card-avatar class="stat-icon category-icon">
+          <mat-icon>category</mat-icon>
+        </div>
+        <mat-card-title>Categories</mat-card-title>
+        <mat-card-subtitle>Active Categories</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <h2 class="stat-value">{{ stats.totalCategories || 0 }}</h2>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Customers Card -->
+    <mat-card class="stat-card">
+      <mat-card-header>
+        <div mat-card-avatar class="stat-icon customer-icon">
+          <mat-icon>people</mat-icon>
+        </div>
+        <mat-card-title>Customers</mat-card-title>
+        <mat-card-subtitle>Registered Users</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <h2 class="stat-value">{{ stats.totalCustomers || 0 }}</h2>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

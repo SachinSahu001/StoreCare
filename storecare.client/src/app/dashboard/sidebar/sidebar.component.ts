@@ -29,11 +29,12 @@ export class SidebarComponent implements OnInit {
     // Role-specific menu items
     if (this.userRole === 'SuperAdmin') {
       this.menuItems = [
-        ...commonItems,
-        { label: 'Users', icon: 'fas fa-users', route: 'users' },
-        { label: 'Stores', icon: 'fas fa-store', route: 'stores' },
-        { label: 'Settings', icon: 'fas fa-cog', route: 'settings' },
-        { label: 'Reports', icon: 'fas fa-chart-bar', route: 'reports' }
+        { label: 'Dashboard', icon: 'fas fa-home', route: '/dashboard/superadmin/dashboard' },
+        { label: 'Categories', icon: 'fas fa-tags', route: '/dashboard/superadmin/categories' },
+        { label: 'Products', icon: 'fas fa-box-open', route: '/dashboard/superadmin/products' },
+        { label: 'Stores', icon: 'fas fa-store', route: '/dashboard/superadmin/stores' },
+        { label: 'Assignments', icon: 'fas fa-dolly-flatbed', route: '/dashboard/superadmin/assignments' },
+        { label: 'Users', icon: 'fas fa-users', route: '/dashboard/superadmin/users' },
       ];
     } else if (this.userRole === 'StoreAdmin') {
       this.menuItems = [

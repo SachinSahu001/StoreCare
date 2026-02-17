@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 export class DashboardlayoutComponent implements OnInit {
   userRole: string | null = null;
   userName: string | null = null;
+  userProfileImage: string | null = null;
   isSidebarOpen = false;
 
   constructor(
@@ -21,6 +22,8 @@ export class DashboardlayoutComponent implements OnInit {
   ngOnInit(): void {
     this.userRole = this.authService.getRole();
     this.userName = this.authService.getFullName();
+    const user = this.authService.getCurrentUser();
+    this.userProfileImage = user?.profilePictureUrl || null;
   }
 
   toggleSidebar(): void {

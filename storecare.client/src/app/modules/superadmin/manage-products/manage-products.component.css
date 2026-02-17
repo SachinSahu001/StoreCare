@@ -1,0 +1,174 @@
+.products-container {
+    max-width: 100%;
+}
+
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+}
+
+.header-section h1 {
+    margin: 0;
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.025em;
+}
+
+.header-section p {
+    margin: 8px 0 0;
+    color: #64748b;
+    font-size: 1rem;
+}
+
+/* Card & Filters */
+.table-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    padding: 0 !important;
+    /* Reset default padding */
+}
+
+.filter-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: white;
+}
+
+.search-field {
+    width: 100%;
+    max-width: 320px;
+    font-size: 14px;
+}
+
+::ng-deep .mat-mdc-text-field-wrapper {
+    background-color: white !important;
+}
+
+/* Table Styling */
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+}
+
+/* Table Header */
+::ng-deep .mat-mdc-header-cell {
+    background-color: #f8fafc !important;
+    color: #64748b !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 16px 24px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Table Cells */
+::ng-deep .mat-mdc-cell {
+    padding: 16px 24px !important;
+    color: #334155 !important;
+    font-size: 0.9rem !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+::ng-deep .mat-mdc-row:hover {
+    background-color: #f8fafc !important;
+}
+
+::ng-deep .mat-mdc-row:last-child .mat-mdc-cell {
+    border-bottom: none !important;
+}
+
+/* Product Specifics */
+.product-image {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    object-fit: cover;
+    margin-right: 12px;
+}
+
+.product-name {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 0.95rem;
+}
+
+.product-brand {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* Badges */
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-block;
+}
+
+.status-badge.active {
+    background-color: #ecfdf5;
+    /* Emerald 50 */
+    color: #059669;
+    /* Emerald 600 */
+    border: 1px solid #d1fae5;
+}
+
+.status-badge.inactive {
+    background-color: #fef2f2;
+    /* Red 50 */
+    color: #dc2626;
+    /* Red 600 */
+    border: 1px solid #fee2e2;
+}
+
+/* Buttons */
+button[mat-raised-button] {
+    padding: 0 24px !important;
+    height: 42px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.025em !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+button[mat-icon-button] {
+    width: 36px !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    font-size: 1.2rem !important;
+    color: #94a3b8 !important;
+    transition: all 0.2s !important;
+}
+
+button[mat-icon-button]:hover {
+    background-color: #f1f5f9 !important;
+    color: #4f46e5 !important;
+}
+
+button[color="warn"]:hover {
+    color: #ef4444 !important;
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    padding: 48px;
+}

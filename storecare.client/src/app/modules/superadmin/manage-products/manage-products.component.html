@@ -1,0 +1,124 @@
+<div class="products-container">
+    <div class="header-section">
+        <div>
+            <h1>Manage Products</h1>
+            <p>Create, update, and track inventory products</p>
+        </div>
+        <button mat-raised-button color="primary" (click)="openDialog()">
+            <mat-icon style="margin-right: 8px;">add</mat-icon> Add Product
+        </button>
+    </div>
+
+    <div class="table-card">
+        <div class="filter-header">
+            <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+                <mat-label>Search products, brands, or codes</mat-label>
+                <input matInput (keyup)="applyFilter($event)" placeholder="Ex. iPhone" #input>
+                <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+        </div>
+
+        <div *ngIf="isLoading" class="loading-spinner">
+            <mat-spinner diameter="40"></mat-spinner>
+        </div>
+
+        <div class="table-container" [hidden]="isLoading">
+            <table mat-table [dataSource]="dataSource" matSort>
+
+                <!-- Image Column -->
+                <ng-container matColumnDef="imageUrl">
+                    <th mat-header-cell *matHeaderCellDef> Product </th>
+                    <td mat-cell *matCellDef="let row">
+                        <div style="display: flex; align-items: center;">
+                            <img [src]="row.imageUrl || 'assets/placeholder.png'" class="product-image" alt="Product">
+                        </div>
+                    </td>
+                </ng-container>
+
+                <!-- Name Column -->
+                <ng-container matColumnDef="productName">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Name </th>
+                    <td mat-cell *matCellDef="let row">
+                        <div class="product-name">{{row.productName}}</div>
+                        <div class="product-brand">{{row.brand}} {{row.model}}</div>
+                    </td>
+                </ng-container>
+
+                <!-- Code Column -->
+                <ng-container matColumnDef="productCode">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Code </th>
+                    <td mat-cell *matCellDef="let row">
+                        <span
+                            style="font-family: monospace; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">
+                            {{row.productCode}}
+                        </span>
+                    </td>
+                </ng-container>
+
+                <!-- Category Column -->
+                <ng-container matColumnDef="categoryName">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Category </th>
+                    <td mat-cell *matCellDef="let row"> {{row.categoryName}} </td>
+                </ng-container>
+
+                <!-- Price Column -->
+                <ng-container matColumnDef="price">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Price </th>
+                    <td mat-cell *matCellDef="let row">
+                        <span style="font-weight: 600; color: #0f172a;">{{row.price | currency:'INR'}}</span>
+                    </td>
+                </ng-container>
+
+                <!-- Stock Column -->
+                <ng-container matColumnDef="stockQuantity">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Stock </th>
+                    <td mat-cell *matCellDef="let row">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <mat-icon *ngIf="row.stockQuantity < 10"
+                                style="font-size: 16px; width: 16px; height: 16px; color: #ef4444;">warning</mat-icon>
+                            <span>{{row.stockQuantity}} {{row.unit}}</span>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <!-- Status Column -->
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
+                    <td mat-cell *matCellDef="let row">
+                        <span class="status-badge" [class.active]="row.active" [class.inactive]="!row.active">
+                            {{row.active ? 'Active' : 'Inactive'}}
+                        </span>
+                    </td>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef> Actions </th>
+                    <td mat-cell *matCellDef="let row">
+                        <button mat-icon-button (click)="openDialog(row)" matTooltip="Edit">
+                            <mat-icon>edit_note</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="deleteProduct(row.id)" matTooltip="Delete">
+                            <mat-icon>delete_outline</mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                <!-- Row shown when there is no matching data. -->
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell" colspan="8"
+                        style="text-align: center; padding: 48px !important; color: #64748b;">
+                        <mat-icon
+                            style="font-size: 48px; width: 48px; height: 48px; opacity: 0.5; margin-bottom: 8px;">search_off</mat-icon>
+                        <div style="font-size: 1rem;">No data matching the filter "{{input.value}}"</div>
+                    </td>
+                </tr>
+            </table>
+
+            <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of products"></mat-paginator>
+        </div>
+    </div>
+</div>

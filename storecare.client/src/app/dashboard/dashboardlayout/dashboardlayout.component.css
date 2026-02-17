@@ -1,17 +1,26 @@
 .dashboard-container {
   display: flex;
   min-height: 100vh;
-  background: #f5f7fa;
+  background: #f8fafc;
+  /* Slate 50 */
 }
 
 .main-content {
   flex: 1;
   margin-left: 260px;
-  transition: margin-left 0.3s ease;
+  min-width: 0;
+  /* Prevent flex blowout */
+  display: flex;
+  flex-direction: column;
 }
 
 .content-wrapper {
   padding: 2rem;
+  flex: 1;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 /* Sidebar overlay */
@@ -22,16 +31,20 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
+  background: rgba(15, 23, 42, 0.4);
+  /* Slate 900 with opacity */
+  backdrop-filter: blur(2px);
+  z-index: 950;
   opacity: 0;
   transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
-  .sidebar-overlay.active {
-    display: block;
-    opacity: 1;
-  }
+.sidebar-overlay.active {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+}
 
 /* Responsive */
 @media (max-width: 768px) {

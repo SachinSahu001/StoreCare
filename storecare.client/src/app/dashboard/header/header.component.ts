@@ -11,6 +11,7 @@ import { AuthService } from '../../services/auth.service';
 export class HeaderComponent {
   @Input() userName: string | null = null;
   @Input() userRole: string | null = null;
+  @Input() userProfileImage: string | null = null;
   @Output() logout = new EventEmitter<void>();
   @Output() sidebarToggle = new EventEmitter<void>(); // Add this
 

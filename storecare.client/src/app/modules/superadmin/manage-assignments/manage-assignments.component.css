@@ -1,0 +1,91 @@
+.assignments-container {
+    padding: 24px;
+}
+
+.header-section {
+    margin-bottom: 24px;
+}
+
+.header-section h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 500;
+}
+
+.header-section p {
+    margin: 4px 0 0;
+    color: #666;
+}
+
+.filter-card {
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.filter-controls {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-controls button {
+    height: 56px;
+    /* Match form field height */
+    margin-bottom: 20px;
+    /* Align with form fields having labels */
+}
+
+.table-card {
+    padding: 16px;
+    position: relative;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.7);
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.table-container {
+    overflow: auto;
+}
+
+table {
+    width: 100%;
+}
+
+.product-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+    margin-right: 8px;
+}
+
+.product-name {
+    font-weight: 500;
+}
+
+.assigned-badge {
+    font-size: 10px;
+    background-color: #e0e0e0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #555;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+.no-data {
+    text-align: center;
+    padding: 48px;
+    color: #777;
+}

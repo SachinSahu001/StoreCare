@@ -1,0 +1,62 @@
+.stores-container {
+    padding: 24px;
+}
+
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.header-section h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 500;
+}
+
+.header-section p {
+    margin: 4px 0 0;
+    color: #666;
+}
+
+.table-card {
+    padding: 16px;
+}
+
+.search-field {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 16px;
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    padding: 24px;
+}
+
+.table-container {
+    overflow: auto;
+}
+
+table {
+    width: 100%;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-badge.active {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-badge.inactive {
+    background-color: #ffebee;
+    color: #c62828;
+}
