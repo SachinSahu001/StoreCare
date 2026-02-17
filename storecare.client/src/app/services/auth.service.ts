@@ -1,0 +1,271 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { BehaviorSubject, Observable, tap, catchError, throwError, timeout } from 'rxjs';
+import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
+
+export interface RegisterRequest {
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  role: string;
+  fullName: string;
+  email: string;
+  storeId?: string;
+  profilePicture?: string;
+  message: string;
+}
+
+export interface UserProfile {
+  id: string;
+  userCode: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  role: string;
+  status: string;
+  active: boolean;
+  storeId?: string;
+  storeName?: string;
+  profilePicture?: string;
+  profilePictureUrl?: string;
+  createdBy: string;
+  createdDate: Date;
+  modifiedBy: string;
+  modifiedDate: Date;
+  lastLogin?: Date;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  private apiUrl = `${environment.apiUrl}/auth`;
+  private tokenKey = 'auth_token';
+  private userKey = 'current_user';
+
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
+  isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
+
+  private currentUserSubject = new BehaviorSubject<UserProfile | null>(this.getStoredUser());
+  currentUser$ = this.currentUserSubject.asObservable();
+
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) { }
+
+  // ==================== REGISTRATION ====================
+  register(data: RegisterRequest): Observable<any> {
+    console.log('Registering user:', data.email);
+    return this.http.post(`${this.apiUrl}/register`, data, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    }).pipe(
+      timeout(30000), // 30 seconds timeout
+      tap(response => console.log('Registration response:', response)),
+      catchError(this.handleError)
+    );
+  }
+
+  // ==================== LOGIN ====================
+  login(data: LoginRequest): Observable<AuthResponse> {
+    console.log('Logging in user:', data.email);
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, data, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    }).pipe(
+      timeout(30000), // 30 seconds timeout
+      tap(response => {
+        console.log('Login response:', response);
+        this.setToken(response.token);
+        const user: Partial<UserProfile> = {
+          fullName: response.fullName,
+          email: response.email,
+          role: response.role,
+          storeId: response.storeId,
+          profilePictureUrl: response.profilePicture
+        };
+        this.setUser(user);
+        this.isAuthenticatedSubject.next(true);
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  // ==================== LOGOUT ====================
+  logout(): void {
+    this.http.post(`${this.apiUrl}/logout`, {}).subscribe({
+      next: () => {
+        this.clearStorage();
+        this.isAuthenticatedSubject.next(false);
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        this.clearStorage();
+        this.isAuthenticatedSubject.next(false);
+        this.router.navigate(['/login']);
+      }
+    });
+  }
+
+  // ==================== GET PROFILE ====================
+  getProfile(): Observable<UserProfile> {
+    return this.http.get<UserProfile>(`${this.apiUrl}/profile`).pipe(
+      tap(user => {
+        this.setUser(user);
+        this.currentUserSubject.next(user);
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  // ==================== WHO AM I ====================
+  whoAmI(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/whoami`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  // ==================== TOKEN MANAGEMENT ====================
+  setToken(token: string): void {
+    localStorage.setItem(this.tokenKey, token);
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem(this.tokenKey);
+  }
+
+  removeToken(): void {
+    localStorage.removeItem(this.tokenKey);
+  }
+
+  hasToken(): boolean {
+    return !!this.getToken();
+  }
+
+  // ==================== USER MANAGEMENT ====================
+  setUser(user: Partial<UserProfile>): void {
+    const currentUser = this.getStoredUser() || {};
+    const updatedUser = { ...currentUser, ...user };
+    localStorage.setItem(this.userKey, JSON.stringify(updatedUser));
+    this.currentUserSubject.next(updatedUser as UserProfile);
+  }
+
+  getStoredUser(): UserProfile | null {
+    const userStr = localStorage.getItem(this.userKey);
+    if (userStr) {
+      try {
+        return JSON.parse(userStr);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  removeUser(): void {
+    localStorage.removeItem(this.userKey);
+    this.currentUserSubject.next(null);
+  }
+
+  clearStorage(): void {
+    this.removeToken();
+    this.removeUser();
+  }
+
+  // ==================== HELPER METHODS ====================
+  isLoggedIn(): boolean {
+    return this.hasToken();
+  }
+
+  getCurrentUser(): UserProfile | null {
+    return this.currentUserSubject.value;
+  }
+
+  getRole(): string | null {
+    return this.currentUserSubject.value?.role || null;
+  }
+
+  getFullName(): string | null {
+    return this.currentUserSubject.value?.fullName || null;
+  }
+
+  // ==================== ROLE-BASED REDIRECTION ====================
+  redirectBasedOnRole(role: string): void {
+    console.log('Redirecting based on role:', role);
+    switch (role) {
+      case 'SuperAdmin':
+        this.router.navigate(['/admin']);
+        break;
+      case 'StoreAdmin':
+        this.router.navigate(['/store']);
+        break;
+      case 'Customer':
+        this.router.navigate(['/']);
+        break;
+      default:
+        this.router.navigate(['/']);
+        break;
+    }
+  }
+
+  // ==================== ERROR HANDLER ====================
+  private handleError(error: HttpErrorResponse) {
+    console.error('API Error Details:', {
+      status: error.status,
+      statusText: error.statusText,
+      message: error.message,
+      error: error.error,
+      url: error.url,
+      name: error.name,
+      ok: error.ok
+    });
+
+    let errorMessage = 'An error occurred';
+
+    if (error.error instanceof ErrorEvent) {
+      // Client-side error
+      errorMessage = `Client Error: ${error.error.message}`;
+      console.error('Client-side error:', error.error.message);
+    } else {
+      // Server-side error
+      if (error.status === 0) {
+        // This usually means CORS or network issue
+        errorMessage = 'Cannot connect to server. Please check:\n' +
+          '1. Server is running on https://localhost:7066\n' +
+          '2. CORS is configured correctly\n' +
+          '3. You have accepted the SSL certificate';
+        console.error('Server connection failed - CORS or server not running');
+        console.error('Attempted URL:', error.url);
+      } else if (error.status === 401) {
+        errorMessage = 'Invalid email or password';
+      } else if (error.status === 400) {
+        errorMessage = error.error?.message || 'Bad request';
+      } else if (error.status === 404) {
+        errorMessage = `API endpoint not found: ${error.url}`;
+      } else if (error.status === 500) {
+        errorMessage = 'Server error. Please try again later.';
+      } else {
+        errorMessage = error.error?.message || `Server Error: ${error.status} - ${error.statusText}`;
+      }
+    }
+
+    return throwError(() => new Error(errorMessage));
+  }
+}

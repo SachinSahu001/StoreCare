@@ -1,1 +1,188 @@
-<p>storeadmin works!</p>
+<div class="storeadmin-dashboard">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div class="header-left">
+      <h1>Store Dashboard</h1>
+      <p class="welcome-text">Welcome back, <strong>{{ userName }}</strong></p>
+    </div>
+    <div class="header-right">
+      <button class="btn-logout" (click)="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        Logout
+      </button>
+    </div>
+  </div>
+
+  <!-- Store Info Card -->
+  <div class="store-info-card" *ngIf="store && !loading">
+    <div class="store-icon">
+      <i class="fas fa-store"></i>
+    </div>
+    <div class="store-details">
+      <h2>{{ store.storeName }}</h2>
+      <p class="store-code">Store Code: <strong>{{ store.storeCode }}</strong></p>
+      <div class="store-meta">
+        <span><i class="fas fa-envelope"></i> {{ store.storeEmail }}</span>
+        <span><i class="fas fa-phone"></i> {{ store.storePhone }}</span>
+        <span><i class="fas fa-map-marker-alt"></i> {{ store.city }}, {{ store.state }} - {{ store.pincode }}</span>
+      </div>
+      <div class="store-status">
+        <span class="status-badge" [class.active]="store.active">
+          {{ store.active ? 'Active' : 'Inactive' }}
+        </span>
+      </div>
+    </div>
+    <div class="store-actions">
+      <button class="btn-edit" (click)="navigateTo('profile')">
+        <i class="fas fa-edit"></i> Edit Profile
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading store data...</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid" *ngIf="!loading">
+    <div class="stat-card">
+      <div class="stat-icon products">
+        <i class="fas fa-box"></i>
+      </div>
+      <div class="stat-details">
+        <h3>{{ stats.totalProducts }}</h3>
+        <p>Total Products</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon low-stock">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div class="stat-details">
+        <h3>{{ stats.lowStock }}</h3>
+        <p>Low Stock Items</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon out-stock">
+        <i class="fas fa-times-circle"></i>
+      </div>
+      <div class="stat-details">
+        <h3>{{ stats.outOfStock }}</h3>
+        <p>Out of Stock</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon value">
+        <i class="fas fa-dollar-sign"></i>
+      </div>
+      <div class="stat-details">
+        <h3>${{ stats.totalValue.toFixed(2) }}</h3>
+        <p>Inventory Value</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inventory Status -->
+  <div class="inventory-section" *ngIf="!loading">
+    <div class="section-header">
+      <h3>Inventory Status</h3>
+      <div class="header-actions">
+        <button class="btn-refresh" (click)="loadStoreData()">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+        <button class="btn-view-all" (click)="navigateTo('inventory')">
+          Manage Inventory <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="inventory-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Selling Price</th>
+            <th>Stock</th>
+            <th>Min Level</th>
+            <th>Status</th>
+            <th>Location</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of assignedProducts.slice(0, 8)">
+            <td>
+              <div class="product-info">
+                <strong>{{ item.productName }}</strong>
+              </div>
+            </td>
+            <td class="price">${{ item.sellingPrice }}</td>
+            <td class="stock">{{ item.stockQuantity }}</td>
+            <td>{{ item.minStockLevel }}</td>
+            <td>
+              <span class="stock-badge"
+                    [class.out]="getStockStatus(item.stockQuantity, item.minStockLevel) === 'out'"
+                    [class.low]="getStockStatus(item.stockQuantity, item.minStockLevel) === 'low'"
+                    [class.good]="getStockStatus(item.stockQuantity, item.minStockLevel) === 'good'">
+                {{ getStockStatusText(item.stockQuantity, item.minStockLevel) }}
+              </span>
+            </td>
+            <td>{{ item.shelfLocation || 'N/A' }}</td>
+            <td>
+              <button class="btn-icon" (click)="navigateTo('inventory/' + item.id)" title="Edit Stock">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn-icon" (click)="navigateTo('inventory/' + item.id + '/history')" title="View History">
+                <i class="fas fa-history"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="assignedProducts.length === 0">
+            <td colspan="7" class="no-data">No products assigned to your store yet</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer" *ngIf="assignedProducts.length > 8">
+      <button class="btn-view-more" (click)="navigateTo('inventory')">
+        View all {{ assignedProducts.length }} products
+        <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions" *ngIf="!loading">
+    <h3>Quick Actions</h3>
+    <div class="actions-grid">
+      <button class="action-card" (click)="navigateTo('inventory/update')">
+        <i class="fas fa-edit"></i>
+        <span>Update Stock</span>
+      </button>
+      <button class="action-card" (click)="navigateTo('products/scan')">
+        <i class="fas fa-qrcode"></i>
+        <span>Scan Product</span>
+      </button>
+      <button class="action-card" (click)="navigateTo('reports')">
+        <i class="fas fa-chart-line"></i>
+        <span>View Reports</span>
+      </button>
+      <button class="action-card" (click)="navigateTo('orders')">
+        <i class="fas fa-shopping-cart"></i>
+        <span>View Orders</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="dashboard-footer">
+    <p>&copy; {{ currentYear }} StoreCare. All rights reserved.</p>
+  </div>
+</div>

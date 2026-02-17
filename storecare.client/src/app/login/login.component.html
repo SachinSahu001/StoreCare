@@ -1,1 +1,85 @@
-<p>login works!</p>
+<div class="login-container">
+  <div class="login-card">
+    <!-- Header -->
+    <div class="login-header">
+      <div class="logo">
+        <i class="fas fa-store"></i>
+        <span>StoreCare</span>
+      </div>
+      <h1>Welcome Back</h1>
+      <p>Sign in to continue to your account</p>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-alert" *ngIf="errorMessage">
+      <i class="fas fa-exclamation-circle"></i>
+      {{ errorMessage }}
+    </div>
+
+    <!-- Login Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">
+          <i class="fas fa-envelope"></i>
+          Email Address
+        </label>
+        <input type="email"
+               id="email"
+               formControlName="email"
+               class="form-control"
+               [class.error]="isFieldInvalid('email')"
+               placeholder="john@example.com">
+        <div class="error-message" *ngIf="isFieldInvalid('email')">
+          <i class="fas fa-exclamation-circle"></i>
+          {{ getFieldError('email') }}
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label for="password">
+          <i class="fas fa-lock"></i>
+          Password
+        </label>
+        <div class="password-input-wrapper">
+          <input [type]="showPassword ? 'text' : 'password'"
+                 id="password"
+                 formControlName="password"
+                 class="form-control"
+                 [class.error]="isFieldInvalid('password')"
+                 placeholder="Enter your password">
+          <button type="button"
+                  class="password-toggle"
+                  (click)="togglePasswordVisibility()">
+            <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
+        </div>
+        <div class="error-message" *ngIf="isFieldInvalid('password')">
+          <i class="fas fa-exclamation-circle"></i>
+          {{ getFieldError('password') }}
+        </div>
+      </div>
+
+      <!-- Remember Me & Forgot Password -->
+      <div class="form-options">
+        <label class="checkbox-label">
+          <input type="checkbox" [checked]="rememberMe" (change)="toggleRememberMe()">
+          <span class="checkbox-text">Remember me</span>
+        </label>
+        <a class="forgot-link" (click)="goToForgotPassword()">Forgot Password?</a>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="btn-login" [disabled]="loginForm.invalid || isSubmitting">
+        <i class="fas" [class.fa-spinner]="isSubmitting" [class.fa-spin]="isSubmitting" [class.fa-sign-in-alt]="!isSubmitting"></i>
+        {{ isSubmitting ? 'Signing In...' : 'Sign In' }}
+      </button>
+    </form>
+
+    <!-- Register Link -->
+    <div class="register-link">
+      Don't have an account? <a (click)="goToRegister()">Create Account</a>
+    </div>
+  </div>
+</div>

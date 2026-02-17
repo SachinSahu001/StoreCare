@@ -1,1 +1,114 @@
-<p>customer works!</p>
+<div class="customer-dashboard">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div class="header-left">
+      <h1>My Account</h1>
+      <p class="welcome-text">Welcome back, <strong>{{ userName }}</strong>!</p>
+    </div>
+    <div class="header-right">
+      <button class="btn-cart" (click)="navigateTo('cart')">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="cart-badge">3</span>
+      </button>
+      <button class="btn-logout" (click)="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading products...</p>
+  </div>
+
+  <!-- Categories Section -->
+  <section class="categories-section" *ngIf="!loading">
+    <h2>Shop by Category</h2>
+    <div class="categories-grid">
+      <div class="category-card" *ngFor="let category of categories"
+           (click)="viewCategory(category.id)">
+        <div class="category-icon">
+          <i class="fas fa-tag"></i>
+        </div>
+        <h3>{{ category.categoryName }}</h3>
+        <p>{{ category.description || 'Explore products' }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Products -->
+  <section class="featured-section" *ngIf="!loading">
+    <h2>Featured Products</h2>
+    <div class="products-grid">
+      <div class="product-card" *ngFor="let product of featuredProducts">
+        <div class="product-image">
+          <img [src]="product.imageUrl || 'assets/images/product-placeholder.jpg'"
+               [alt]="product.productName">
+          <div class="product-overlay">
+            <button class="btn-quick-view" (click)="viewProduct(product.id)">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+        <div class="product-info">
+          <h3>{{ product.productName }}</h3>
+          <p class="product-price">${{ product.price }}</p>
+          <div class="product-actions">
+            <button class="btn-add-cart" (click)="addToCart(product)">
+              <i class="fas fa-shopping-cart"></i>
+            </button>
+            <button class="btn-wishlist" (click)="addToWishlist(product)">
+              <i class="far fa-heart"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recent Products -->
+  <section class="recent-section" *ngIf="!loading">
+    <h2>Recent Products</h2>
+    <div class="products-grid">
+      <div class="product-card small" *ngFor="let product of recentProducts">
+        <div class="product-image">
+          <img [src]="product.imageUrl || 'assets/images/product-placeholder.jpg'"
+               [alt]="product.productName">
+        </div>
+        <div class="product-info">
+          <h3>{{ product.productName }}</h3>
+          <p class="product-price">${{ product.price }}</p>
+          <button class="btn-view" (click)="viewProduct(product.id)">
+            View Details
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Links -->
+  <div class="quick-links" *ngIf="!loading">
+    <button class="quick-link" (click)="navigateTo('orders')">
+      <i class="fas fa-box"></i>
+      <span>My Orders</span>
+    </button>
+    <button class="quick-link" (click)="navigateTo('wishlist')">
+      <i class="fas fa-heart"></i>
+      <span>Wishlist</span>
+    </button>
+    <button class="quick-link" (click)="navigateTo('profile')">
+      <i class="fas fa-user"></i>
+      <span>Profile</span>
+    </button>
+    <button class="quick-link" (click)="navigateTo('addresses')">
+      <i class="fas fa-map-marker-alt"></i>
+      <span>Addresses</span>
+    </button>
+  </div>
+
+  <!-- Footer -->
+  <div class="dashboard-footer">
+    <p>&copy; {{ currentYear }} StoreCare. All rights reserved.</p>
+  </div>
+</div>

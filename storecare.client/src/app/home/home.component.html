@@ -1,21 +1,52 @@
 <div class="home-container">
-  <!-- Hero Section -->
+  <!-- Hero Section with Slider -->
   <section class="hero-section">
-    <div class="hero-content">
-      <h1 class="hero-title">Welcome to StoreCare</h1>
-      <p class="hero-subtitle">Your One-Stop Shop for Quality Products and Services</p>
-      <div class="hero-buttons">
-        <a href="#" class="btn btn-primary">Shop Now</a>
-        <a href="#" class="btn btn-outline">Learn More</a>
+    <div class="hero-slider">
+      <div class="hero-slide active">
+        <div class="hero-content">
+          <span class="hero-subtitle">Welcome to StoreCare</span>
+          <h1 class="hero-title">Your One-Stop Shop for <span class="highlight">Quality Products</span></h1>
+          <p class="hero-description">Discover thousands of products at amazing prices with fast delivery worldwide.</p>
+          <div class="hero-buttons">
+            <button class="btn btn-primary" (click)="navigateToShop()">
+              <i class="fas fa-shopping-bag"></i>
+              Shop Now
+            </button>
+            <button class="btn btn-outline" (click)="navigateToAbout()">
+              <i class="fas fa-play"></i>
+              Learn More
+            </button>
+          </div>
+        </div>
+        <div class="hero-image">
+          <img src="assets/images/hero-image.png" alt="Shopping">
+        </div>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-number">50K+</span>
+        <span class="stat-label">Happy Customers</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">10K+</span>
+        <span class="stat-label">Products</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">24/7</span>
+        <span class="stat-label">Support</span>
       </div>
     </div>
   </section>
 
   <!-- Featured Categories -->
   <section class="categories-section">
-    <h2 class="section-title">Shop by Category</h2>
+    <div class="section-header">
+      <h2 class="section-title">Shop by Category</h2>
+      <p class="section-subtitle">Explore our wide range of categories</p>
+    </div>
     <div class="categories-grid">
-      <div class="category-card" *ngFor="let category of categories">
+      <div class="category-card" *ngFor="let category of categories" (click)="navigateToCategory(category.slug)">
         <div class="category-icon">
           <i [class]="category.icon"></i>
         </div>
@@ -27,25 +58,88 @@
 
   <!-- Featured Products -->
   <section class="products-section">
-    <h2 class="section-title">Featured Products</h2>
+    <div class="section-header">
+      <h2 class="section-title">Featured Products</h2>
+      <p class="section-subtitle">Hand-picked just for you</p>
+    </div>
     <div class="products-grid">
       <div class="product-card" *ngFor="let product of featuredProducts">
+        <div class="product-badge" *ngIf="product.isNew">
+          <span class="badge-new">New</span>
+        </div>
+        <div class="product-badge right" *ngIf="product.discount">
+          <span class="badge-discount">-{{ product.discount }}%</span>
+        </div>
         <div class="product-image">
-          <img [src]="product.image" [alt]="product.name">
-          <div class="product-overlay">
-            <button class="quick-view">Quick View</button>
+          <img [src]="product.image" [alt]="product.name" class="default-image">
+          <img [src]="product.hoverImage" [alt]="product.name" class="hover-image">
+          <div class="product-actions">
+            <button class="action-btn" (click)="quickView(product)" title="Quick View">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="action-btn" title="Add to Wishlist">
+              <i class="far fa-heart"></i>
+            </button>
+            <button class="action-btn" title="Compare">
+              <i class="fas fa-exchange-alt"></i>
+            </button>
           </div>
+          <button class="add-to-cart-btn" (click)="addToCart(product)">
+            <i class="fas fa-shopping-cart"></i>
+            Add to Cart
+          </button>
         </div>
         <div class="product-info">
           <h3>{{ product.name }}</h3>
-          <p class="product-price">${{ product.price }}</p>
-          <div class="product-rating">
-            <i class="fas fa-star" *ngFor="let star of [1,2,3,4,5]"></i>
-            <span>({{ product.reviews }})</span>
+          <div class="product-price">
+            <span class="current-price">${{ product.price }}</span>
+            <span class="original-price" *ngIf="product.originalPrice">${{ product.originalPrice }}</span>
           </div>
-          <button class="add-to-cart">
-            <i class="fas fa-shopping-cart"></i>
-            Add to Cart
+          <div class="product-rating">
+            <div class="stars">
+              <i class="fas fa-star" *ngFor="let star of getStarArray(product.rating)"></i>
+              <i class="fas fa-star-half-alt" *ngIf="hasHalfStar(product.rating)"></i>
+              <i class="far fa-star" *ngFor="let star of getEmptyStarArray(product.rating)"></i>
+            </div>
+            <span class="rating-count">({{ product.reviews }} reviews)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="section-footer">
+      <button class="btn-view-all" (click)="navigateToShop()">
+        View All Products
+        <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- Special Offers Banner -->
+  <section class="offers-section">
+    <div class="offers-container">
+      <div class="offer-card">
+        <div class="offer-icon">
+          <i class="fas fa-tags"></i>
+        </div>
+        <div class="offer-content">
+          <h3>Special Launch Offer</h3>
+          <p>Get 20% off on your first purchase</p>
+          <button class="offer-btn" (click)="navigateToShop()">
+            Shop Now
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+      <div class="offer-card">
+        <div class="offer-icon">
+          <i class="fas fa-gift"></i>
+        </div>
+        <div class="offer-content">
+          <h3>Free Shipping</h3>
+          <p>On orders over $50</p>
+          <button class="offer-btn" (click)="navigateToShop()">
+            Learn More
+            <i class="fas fa-arrow-right"></i>
           </button>
         </div>
       </div>
@@ -56,25 +150,82 @@
   <section class="features-section">
     <div class="features-grid">
       <div class="feature-card">
-        <i class="fas fa-truck feature-icon"></i>
+        <div class="feature-icon-wrapper">
+          <i class="fas fa-truck feature-icon"></i>
+        </div>
         <h3>Free Shipping</h3>
         <p>On orders over $50</p>
       </div>
       <div class="feature-card">
-        <i class="fas fa-undo feature-icon"></i>
+        <div class="feature-icon-wrapper">
+          <i class="fas fa-undo feature-icon"></i>
+        </div>
         <h3>30 Days Return</h3>
         <p>Money back guarantee</p>
       </div>
       <div class="feature-card">
-        <i class="fas fa-lock feature-icon"></i>
+        <div class="feature-icon-wrapper">
+          <i class="fas fa-lock feature-icon"></i>
+        </div>
         <h3>Secure Payment</h3>
         <p>100% secure transactions</p>
       </div>
       <div class="feature-card">
-        <i class="fas fa-headset feature-icon"></i>
+        <div class="feature-icon-wrapper">
+          <i class="fas fa-headset feature-icon"></i>
+        </div>
         <h3>24/7 Support</h3>
         <p>Dedicated customer service</p>
       </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="testimonials-section">
+    <div class="section-header">
+      <h2 class="section-title">What Our Customers Say</h2>
+      <p class="section-subtitle">Trusted by thousands of happy customers</p>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card" *ngFor="let testimonial of testimonials">
+        <div class="testimonial-rating">
+          <i class="fas fa-star" *ngFor="let star of [1,2,3,4,5]"></i>
+        </div>
+        <p class="testimonial-comment">"{{ testimonial.comment }}"</p>
+        <div class="testimonial-author">
+          <div class="author-image">
+            <img [src]="testimonial.image" [alt]="testimonial.name">
+          </div>
+          <div class="author-info">
+            <h4>{{ testimonial.name }}</h4>
+            <p>{{ testimonial.role }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Brands Section -->
+  <section class="brands-section">
+    <div class="brands-container">
+      <div class="brand-item" *ngFor="let brand of brands">
+        <img [src]="brand.logo" [alt]="brand.name">
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter Section -->
+  <section class="newsletter-section">
+    <div class="newsletter-container">
+      <h2>Subscribe to Our Newsletter</h2>
+      <p>Get the latest updates on new products and upcoming sales</p>
+      <form class="newsletter-form">
+        <input type="email" placeholder="Enter your email address" class="newsletter-input">
+        <button type="submit" class="newsletter-btn">
+          <i class="fas fa-paper-plane"></i>
+          Subscribe
+        </button>
+      </form>
     </div>
   </section>
 </div>

@@ -1,1 +1,16 @@
-<p>dashboardlayout works!</p>
+<div class="dashboard-container">
+  <!-- Sidebar Overlay for mobile -->
+  <div class="sidebar-overlay" [class.active]="isSidebarOpen" (click)="closeSidebar()"></div>
+
+  <app-sidebar [class.open]="isSidebarOpen"></app-sidebar>
+  <div class="main-content">
+    <app-header [userName]="userName"
+                [userRole]="userRole"
+                (logout)="logout()"
+                (sidebarToggle)="toggleSidebar()">
+    </app-header>
+    <div class="content-wrapper">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
