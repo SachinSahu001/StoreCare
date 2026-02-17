@@ -1,21 +1,86 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { NavbarComponent } from './navbar/navbar.component';
-import { LoginComponent } from './login/login.component';
+import { AuthGuard } from './guard/auth.guard';
+
+// Public Components
 import { HomeComponent } from './home/home.component';
+import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
+import { NavbarComponent } from './navbar/navbar.component';
 import { FooterComponent } from './footer/footer.component';
 
+// Dashboard Components
+import { DashboardlayoutComponent } from './dashboard/dashboardlayout/dashboardlayout.component';
+import { SuperadminComponent } from './dashboard/superadmin/superadmin.component';
+import { StoreadminComponent } from './dashboard/storeadmin/storeadmin.component';
+import { CustomerComponent } from './dashboard/customer/customer.component';
+
+
 const routes: Routes = [
-  { path: 'Navbar', component: NavbarComponent },
-  { path: 'Home', component: HomeComponent },
-  { path: 'Footer', component: FooterComponent },
-  { path: 'Register', component: RegisterComponent },
-  { path: 'Login', component: LoginComponent },
+  // Public Routes
+  { path: '', component: HomeComponent, title: 'StoreCare - Home' },
+  { path: 'home', redirectTo: '', pathMatch: 'full' },
+  { path: 'login', component: LoginComponent, title: 'StoreCare - Sign In' },
+  { path: 'Register', component: RegisterComponent, title: 'StoreCare - Create Account' },
 
+  // These are layout components, not meant to be routes directly
+  // { path: 'navbar', component: NavbarComponent }, // Remove - this is a layout component
+  // { path: 'footer', component: FooterComponent }, // Remove - this is a layout component
 
-  { path: '', component: HomeComponent },
+  // Dashboard Layout with Child Routes
+  {
+    path: 'dashboard',
+    component: DashboardlayoutComponent,
+    canActivate: [AuthGuard],
+    children: [
+      // SuperAdmin Routes
+      {
+        path: 'superadmin',
+        component: SuperadminComponent,
+        canActivate: [AuthGuard],
+        data: { role: 'SuperAdmin', title: 'SuperAdmin Dashboard' }
+      },
+      // StoreAdmin Routes
+      {
+        path: 'storeadmin',
+        component: StoreadminComponent,
+        canActivate: [AuthGuard],
+        data: { role: 'StoreAdmin', title: 'StoreAdmin Dashboard' }
+      },
+      // Customer Routes
+      {
+        path: 'customer',
+        component: CustomerComponent,
+        canActivate: [AuthGuard],
+        data: { role: 'Customer', title: 'My Account' }
+      },
+      // Default redirect based on role will be handled by AuthGuard
+      { path: '', redirectTo: '/', pathMatch: 'full' }
+    ]
+  },
 
+  // Direct role-based routes (alternative to dashboard layout)
+  {
+    path: 'admin',
+    component: SuperadminComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'SuperAdmin', title: 'Admin Dashboard' }
+  },
+  {
+    path: 'store',
+    component: StoreadminComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'StoreAdmin', title: 'Store Dashboard' }
+  },
+  {
+    path: 'account',
+    component: CustomerComponent,
+    canActivate: [AuthGuard],
+    data: { role: 'Customer', title: 'My Account' }
+  },
+
+  // Wildcard route - redirect to home for any unknown paths
+  { path: '**', redirectTo: '' }
 ];
 
 @NgModule({

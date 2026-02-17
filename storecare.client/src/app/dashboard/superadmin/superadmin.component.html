@@ -1,1 +1,246 @@
-<p>superadmin works!</p>
+<div class="superadmin-dashboard">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div class="header-left">
+      <h1>SuperAdmin Dashboard</h1>
+      <p class="welcome-text">Welcome back, <strong>{{ userName }}</strong></p>
+    </div>
+    <div class="header-right">
+      <button class="btn-logout" (click)="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        Logout
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid" *ngIf="!loading">
+    <div class="stat-card">
+      <div class="stat-icon stores">
+        <i class="fas fa-store"></i>
+      </div>
+      <div class="stat-details">
+        <h3>{{ stats.totalStores }}</h3>
+        <p>Total Stores</p>
+        <span class="stat-trend positive">
+          <i class="fas fa-arrow-up"></i> 12% from last month
+        </span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon products">
+        <i class="fas fa-box"></i>
+      </div>
+      <div class="stat-details">
+        <h3>{{ stats.totalProducts }}</h3>
+        <p>Total Products</p>
+        <span class="stat-trend positive">
+          <i class="fas fa-arrow-up"></i> 8% from last month
+        </span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon categories">
+        <i class="fas fa-tags"></i>
+      </div>
+      <div class="stat-details">
+        <h3>{{ stats.totalCategories }}</h3>
+        <p>Categories</p>
+        <span class="stat-trend neutral">
+          <i class="fas fa-minus"></i> No change
+        </span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon assignments">
+        <i class="fas fa-link"></i>
+      </div>
+      <div class="stat-details">
+        <h3>{{ stats.totalAssignments }}</h3>
+        <p>Assignments</p>
+        <span class="stat-trend positive">
+          <i class="fas fa-arrow-up"></i> 15% from last month
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading dashboard data...</p>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="charts-section" *ngIf="!loading">
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Stores Overview</h3>
+        <select class="chart-filter">
+          <option>Last 6 months</option>
+          <option>Last year</option>
+          <option>All time</option>
+        </select>
+      </div>
+      <div class="chart-container">
+        <div class="bar-chart">
+          <div *ngFor="let value of monthlyStats.stores; let i = index"
+               class="bar-item">
+            <div class="bar" [style.height]="(value / 30) * 100 + '%'">
+              <span class="bar-value">{{ value }}</span>
+            </div>
+            <span class="bar-label">{{ monthlyStats.labels[i] }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>Products Overview</h3>
+        <select class="chart-filter">
+          <option>Last 6 months</option>
+          <option>Last year</option>
+          <option>All time</option>
+        </select>
+      </div>
+      <div class="chart-container">
+        <div class="bar-chart">
+          <div *ngFor="let value of monthlyStats.products; let i = index"
+               class="bar-item">
+            <div class="bar" [style.height]="(value / 150) * 100 + '%'">
+              <span class="bar-value">{{ value }}</span>
+            </div>
+            <span class="bar-label">{{ monthlyStats.labels[i] }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Data Section -->
+  <div class="recent-section" *ngIf="!loading">
+    <div class="recent-card">
+      <div class="card-header">
+        <h3>Recent Stores</h3>
+        <button class="btn-view-all" (click)="navigateTo('stores')">
+          View All <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="recent-table">
+          <thead>
+            <tr>
+              <th>Store Name</th>
+              <th>Code</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let store of recentStores">
+              <td>
+                <div class="cell-with-icon">
+                  <i class="fas fa-store"></i>
+                  {{ store.storeName }}
+                </div>
+              </td>
+              <td>{{ store.storeCode }}</td>
+              <td>
+                <span class="status-badge" [class.active]="store.active">
+                  {{ store.active ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td>
+                <button class="btn-icon" (click)="navigateTo('stores/' + store.id)" title="View Details">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn-icon" (click)="navigateTo('stores/edit/' + store.id)" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="recentStores.length === 0">
+              <td colspan="4" class="no-data">No stores found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="recent-card">
+      <div class="card-header">
+        <h3>Recent Products</h3>
+        <button class="btn-view-all" (click)="navigateTo('products')">
+          View All <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="recent-table">
+          <thead>
+            <tr>
+              <th>Product Name</th>
+              <th>Price</th>
+              <th>Category</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let product of recentProducts">
+              <td>
+                <div class="cell-with-icon">
+                  <i class="fas fa-box"></i>
+                  {{ product.productName }}
+                </div>
+              </td>
+              <td>${{ product.price }}</td>
+              <td>{{ product.categoryName || 'N/A' }}</td>
+              <td>
+                <button class="btn-icon" (click)="navigateTo('products/' + product.id)" title="View Details">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn-icon" (click)="navigateTo('products/edit/' + product.id)" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="recentProducts.length === 0">
+              <td colspan="4" class="no-data">No products found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions" *ngIf="!loading">
+    <h3>Quick Actions</h3>
+    <div class="actions-grid">
+      <button class="action-card" (click)="navigateTo('stores/new')">
+        <i class="fas fa-plus-circle"></i>
+        <span>Add New Store</span>
+      </button>
+      <button class="action-card" (click)="navigateTo('categories/new')">
+        <i class="fas fa-plus-circle"></i>
+        <span>Add Category</span>
+      </button>
+      <button class="action-card" (click)="navigateTo('products/new')">
+        <i class="fas fa-plus-circle"></i>
+        <span>Add Product</span>
+      </button>
+      <button class="action-card" (click)="navigateTo('assignments/new')">
+        <i class="fas fa-plus-circle"></i>
+        <span>Assign Products</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="dashboard-footer">
+    <p>&copy; {{ currentYear }} StoreCare. All rights reserved.</p>
+  </div>
+</div>
