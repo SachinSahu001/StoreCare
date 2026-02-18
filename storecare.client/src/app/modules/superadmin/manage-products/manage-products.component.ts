@@ -76,16 +76,35 @@ export class ManageProductsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        const formData = new FormData();
+        formData.append('ProductName', result.productName);
+        formData.append('CategoryId', result.categoryId);
+        formData.append('BrandName', result.brandName);
+        if (result.model) formData.append('Model', result.model);
+        if (result.productDescription) formData.append('ProductDescription', result.productDescription);
+
+        formData.append('Price', result.price.toString());
+        formData.append('Mrp', result.mrp?.toString() || '0');
+        formData.append('StockQuantity', result.stockQuantity.toString());
+        formData.append('Unit', result.unit);
+        formData.append('IsFeatured', String(result.isFeatured));
+
+        // Active status handling if needed for updates via StatusId
+
+        if (result.file) {
+          formData.append('ProductImage', result.file);
+        }
+
         if (product) {
-          this.updateProduct(product.id, result);
+          this.updateProduct(product.id, formData);
         } else {
-          this.createProduct(result);
+          this.createProduct(formData);
         }
       }
     });
   }
 
-  createProduct(product: Partial<Product>): void {
+  createProduct(product: FormData): void {
     this.productService.createProduct(product).subscribe({
       next: () => {
         this.showSnackBar('Product created successfully', 'Close');
@@ -98,7 +117,7 @@ export class ManageProductsComponent implements OnInit {
     });
   }
 
-  updateProduct(id: string, product: Partial<Product>): void {
+  updateProduct(id: string, product: FormData): void {
     this.productService.updateProduct(id, product).subscribe({
       next: () => {
         this.showSnackBar('Product updated successfully', 'Close');

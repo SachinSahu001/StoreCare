@@ -66,13 +66,32 @@ export class ManageStoresComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        const formData = this.createFormData(result);
         if (store) {
-          this.updateStore(store.id, result);
+          this.updateStore(store.id, formData);
         } else {
-          this.createStore(result);
+          this.createStore(formData);
         }
       }
     });
+  }
+
+  createFormData(store: any): FormData {
+    const formData = new FormData();
+    // Map frontend keys to Backend DTO keys (PascalCase)
+    formData.append('StoreName', store.storeName);
+    formData.append('Address', store.address); // Changed from storeAddress
+    formData.append('ContactNumber', store.contactNumber); // Changed from storePhone
+    formData.append('Email', store.email); // Changed from storeEmail
+
+    // StatusId logic - assuming backend handles IsActive map or we send StatusId
+    // If backend expects StatusId for active/inactive:
+    formData.append('StatusId', store.active ? '1' : '2'); // Example: 1=Active, 2=Inactive
+
+    if (store.storeLogo) {
+      formData.append('StoreLogo', store.storeLogo);
+    }
+    return formData;
   }
 
   openAdminDialog(store: Store): void {
@@ -81,9 +100,11 @@ export class ManageStoresComponent implements OnInit {
       data: { storeId: store.id, storeName: store.storeName }
     });
   }
+  // Added property to class to fix compilation if needed, or remove 'this.dialogRef =' if not strictly needed property. 
+  // Actually openAdminDialog was valid before, just fixing indentation/context.
 
-  createStore(store: Partial<Store>): void {
-    this.storeService.createStore(store).subscribe({
+  createStore(storeData: FormData): void {
+    this.storeService.createStore(storeData).subscribe({
       next: () => {
         this.showSnackBar('Store created successfully', 'Close');
         this.loadStores();
@@ -95,8 +116,8 @@ export class ManageStoresComponent implements OnInit {
     });
   }
 
-  updateStore(id: string, store: Partial<Store>): void {
-    this.storeService.updateStore(id, store).subscribe({
+  updateStore(id: string, storeData: FormData): void {
+    this.storeService.updateStore(id, storeData).subscribe({
       next: () => {
         this.showSnackBar('Store updated successfully', 'Close');
         this.loadStores();

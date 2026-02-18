@@ -14,6 +14,7 @@ import { DashboardlayoutComponent } from './dashboard/dashboardlayout/dashboardl
 import { SuperadminComponent } from './dashboard/superadmin/superadmin.component';
 import { StoreadminComponent } from './dashboard/storeadmin/storeadmin.component';
 import { CustomerComponent } from './dashboard/customer/customer.component';
+import { ProfileComponent } from './shared/components/profile/profile.component';
 
 
 const routes: Routes = [
@@ -53,6 +54,13 @@ const routes: Routes = [
         component: CustomerComponent,
         canActivate: [AuthGuard],
         data: { role: 'Customer', title: 'My Account' }
+      },
+      // Shared Profile Route
+      {
+        path: 'profile',
+        component: ProfileComponent,
+        canActivate: [AuthGuard],
+        data: { title: 'My Profile' }
       },
       // Default redirect based on role will be handled by AuthGuard
       { path: '', redirectTo: '/', pathMatch: 'full' }

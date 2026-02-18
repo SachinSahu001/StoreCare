@@ -1,6 +1,13 @@
-<h2 mat-dialog-title>Create Admin for {{ data.storeName }}</h2>
-<mat-dialog-content [formGroup]="adminForm">
-    <div class="form-grid">
+<h2 mat-dialog-title>Create New Store Admin</h2>
+
+<mat-dialog-content>
+    <!-- Step 1: User Details -->
+    <div *ngIf="currentStep === 0" [formGroup]="adminForm" class="form-grid">
+        <p class="step-title">Step 1: Admin Details</p>
+        <div class="full-width-msg">
+            <small>A new store will be automatically created for this admin.</small>
+        </div>
+
         <mat-form-field appearance="outline" class="full-width">
             <mat-label>Full Name</mat-label>
             <input matInput formControlName="fullName" placeholder="Ex. John Doe">
@@ -31,11 +38,76 @@
             <mat-error *ngIf="adminForm.hasError('mismatch')">Passwords do not match</mat-error>
         </mat-form-field>
     </div>
+
+    <!-- Step 2: Store Details -->
+    <div *ngIf="currentStep === 1" [formGroup]="storeForm" class="form-grid">
+        <p class="step-title">Step 2: Store Details</p>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Store Name</mat-label>
+            <input matInput formControlName="storeName">
+            <mat-error *ngIf="storeForm.get('storeName')?.hasError('required')">Required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Contact Number</mat-label>
+            <input matInput formControlName="contactNumber">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Store Email</mat-label>
+            <input matInput formControlName="email">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Address</mat-label>
+            <textarea matInput formControlName="address" rows="2"></textarea>
+            <mat-error *ngIf="storeForm.get('address')?.hasError('required')">Required</mat-error>
+        </mat-form-field>
+
+        <div class="file-upload-container full-width" style="margin-bottom: 16px;">
+            <label style="display: block; margin-bottom: 8px; color: rgba(0,0,0,.54); font-size: 12px;">Store
+                Logo</label>
+            <input type="file" (change)="onLogoSelected($event)" accept="image/*">
+            <div *ngIf="logoPreview" style="margin-top: 10px;">
+                <img [src]="logoPreview" alt="Store Logo Preview"
+                    style="max-height: 80px; border-radius: 4px; border: 1px solid #ccc;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Product Assignment -->
+    <div *ngIf="currentStep === 2">
+        <p class="step-title">Step 3: Assign Products (Optional)</p>
+        <p class="step-desc">Select categories to assign ALL products from that category to the new store.</p>
+
+        <div class="category-list">
+            <div *ngFor="let cat of categories" class="category-item">
+                <mat-checkbox [checked]="categorySelection.isSelected(cat.id)" (change)="toggleCategory(cat.id)">
+                    {{cat.categoryName}}
+                </mat-checkbox>
+            </div>
+            <div *ngIf="categories.length === 0">No categories found.</div>
+        </div>
+    </div>
 </mat-dialog-content>
+
+<div *ngIf="isLoading" class="loader-overlay">
+    <mat-spinner></mat-spinner>
+    <p>Creating Store & Assigning Products...</p>
+</div>
+
 <mat-dialog-actions align="end">
     <button mat-button (click)="onCancel()" [disabled]="isLoading">Cancel</button>
-    <button mat-raised-button color="primary" (click)="onSave()" [disabled]="adminForm.invalid || isLoading">
-        <mat-spinner diameter="20" *ngIf="isLoading" style="display:inline-block; margin-right: 8px"></mat-spinner>
-        Create Admin
+
+    <button mat-button *ngIf="currentStep > 0" (click)="prevStep()" [disabled]="isLoading">Back</button>
+
+    <button mat-raised-button color="primary" *ngIf="currentStep < 2" (click)="nextStep()"
+        [disabled]="(currentStep === 0 && adminForm.invalid) || (currentStep === 1 && storeForm.invalid) || isLoading">
+        Next
+    </button>
+
+    <button mat-raised-button color="accent" *ngIf="currentStep === 2" (click)="onSave()" [disabled]="isLoading">
+        Create Store Admin
     </button>
 </mat-dialog-actions>

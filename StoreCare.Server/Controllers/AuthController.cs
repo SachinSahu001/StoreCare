@@ -917,6 +917,9 @@ public class AuthController : ControllerBase
     // ===============================
     // 17. LOGIN HISTORY (SuperAdmin only)
     // ===============================
+    // ===============================
+    // 17. LOGIN HISTORY (SuperAdmin only)
+    // ===============================
     [HttpGet("login-history")]
     [Authorize(Roles = "SuperAdmin")]
     public async Task<IActionResult> GetLoginHistory([FromQuery] string? userId, [FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate)
@@ -966,6 +969,40 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "GetLoginHistory failed for UserId: {UserId}", currentUserId);
+            return BadRequest(new { message = "Failed to get login history.", error = ex.Message });
+        }
+    }
+
+    [HttpGet("my-login-history")]
+    public async Task<IActionResult> GetMyLoginHistory()
+    {
+        var currentUserId = GetUserIdFromToken();
+        try
+        {
+            var history = await _context.LoginHistories
+                .Where(l => l.UserId == currentUserId)
+                .OrderByDescending(l => l.LoginTime)
+                .Select(l => new
+                {
+                    l.Id,
+                    l.LoginTime,
+                    l.LogoutTime,
+                    l.IpAddress,
+                    l.Browser,
+                    l.Status,
+                    l.FailureReason,
+                    duration = l.LogoutTime.HasValue && l.LoginTime.HasValue
+                        ? (l.LogoutTime.Value - l.LoginTime.Value).TotalMinutes.ToString("F2") + " minutes"
+                        : "Still logged in"
+                })
+                .Take(50)
+                .ToListAsync();
+
+            return Ok(history);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetMyLoginHistory failed for UserId: {UserId}", currentUserId);
             return BadRequest(new { message = "Failed to get login history.", error = ex.Message });
         }
     }

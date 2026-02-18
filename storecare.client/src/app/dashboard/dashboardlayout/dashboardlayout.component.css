@@ -1,8 +1,8 @@
 .dashboard-container {
   display: flex;
   min-height: 100vh;
-  background: #f8fafc;
-  /* Slate 50 */
+  min-height: 100vh;
+  /* background managed by global body style */
 }
 
 .main-content {

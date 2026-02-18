@@ -249,6 +249,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseStaticFiles();
+
 app.UseCors("AllowAll");
 
 // CRITICAL: Authentication MUST come before Authorization

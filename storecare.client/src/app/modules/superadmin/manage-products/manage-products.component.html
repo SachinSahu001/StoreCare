@@ -5,7 +5,7 @@
             <p>Create, update, and track inventory products</p>
         </div>
         <button mat-raised-button color="primary" (click)="openDialog()">
-            <mat-icon style="margin-right: 8px;">add</mat-icon> Add Product
+            <i class="fa-solid fa-plus" style="margin-right: 8px;"></i> Add Product
         </button>
     </div>
 
@@ -14,7 +14,7 @@
             <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
                 <mat-label>Search products, brands, or codes</mat-label>
                 <input matInput (keyup)="applyFilter($event)" placeholder="Ex. iPhone" #input>
-                <mat-icon matSuffix>search</mat-icon>
+                <i matSuffix class="fa-solid fa-search" style="margin-right: 8px;"></i>
             </mat-form-field>
         </div>
 
@@ -74,8 +74,8 @@
                     <th mat-header-cell *matHeaderCellDef mat-sort-header> Stock </th>
                     <td mat-cell *matCellDef="let row">
                         <div style="display: flex; align-items: center; gap: 6px;">
-                            <mat-icon *ngIf="row.stockQuantity < 10"
-                                style="font-size: 16px; width: 16px; height: 16px; color: #ef4444;">warning</mat-icon>
+                            <i *ngIf="row.stockQuantity < 10" class="fa-solid fa-exclamation-triangle"
+                                style="font-size: 16px; color: #ef4444;"></i>
                             <span>{{row.stockQuantity}} {{row.unit}}</span>
                         </div>
                     </td>
@@ -96,10 +96,10 @@
                     <th mat-header-cell *matHeaderCellDef> Actions </th>
                     <td mat-cell *matCellDef="let row">
                         <button mat-icon-button (click)="openDialog(row)" matTooltip="Edit">
-                            <mat-icon>edit_note</mat-icon>
+                            <i class="fa-solid fa-edit"></i>
                         </button>
                         <button mat-icon-button color="warn" (click)="deleteProduct(row.id)" matTooltip="Delete">
-                            <mat-icon>delete_outline</mat-icon>
+                            <i class="fa-solid fa-trash-alt"></i>
                         </button>
                     </td>
                 </ng-container>
@@ -111,8 +111,7 @@
                 <tr class="mat-row" *matNoDataRow>
                     <td class="mat-cell" colspan="8"
                         style="text-align: center; padding: 48px !important; color: #64748b;">
-                        <mat-icon
-                            style="font-size: 48px; width: 48px; height: 48px; opacity: 0.5; margin-bottom: 8px;">search_off</mat-icon>
+                        <i class="fa-solid fa-search" style="font-size: 48px; opacity: 0.5; margin-bottom: 8px;"></i>
                         <div style="font-size: 1rem;">No data matching the filter "{{input.value}}"</div>
                     </td>
                 </tr>

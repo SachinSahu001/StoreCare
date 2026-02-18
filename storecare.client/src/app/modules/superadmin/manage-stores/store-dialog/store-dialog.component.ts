@@ -22,15 +22,11 @@ export class StoreDialogComponent {
 
     this.storeForm = this.fb.group({
       storeName: [data.storeName || '', Validators.required],
-      storeCode: [data.storeCode || '', Validators.required],
-      storeEmail: [data.storeEmail || '', [Validators.required, Validators.email]],
-      storePhone: [data.storePhone || '', Validators.required],
-      storeAddress: [data.storeAddress || '', Validators.required],
-      city: [data.city || '', Validators.required],
-      state: [data.state || '', Validators.required],
-      pincode: [data.pincode || '', Validators.required],
-      gstNumber: [data.gstNumber || ''],
-      active: [data.active !== undefined ? data.active : true]
+      storeCode: [{ value: data.storeCode || 'Auto-generated', disabled: true }],
+      email: [data.email || '', [Validators.required, Validators.email]], // Changed from storeEmail
+      contactNumber: [data.contactNumber || '', [Validators.required, Validators.pattern('^[0-9]{10}$')]], // Changed from storePhone
+      address: [data.address || '', Validators.required], // Changed from storeAddress
+      active: [data.isActive !== undefined ? data.isActive : true] // Changed from active/data.active
     });
   }
 

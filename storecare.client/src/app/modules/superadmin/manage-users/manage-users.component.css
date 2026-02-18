@@ -12,16 +12,24 @@
 .header-section h1 {
     margin: 0;
     font-size: 24px;
-    font-weight: 500;
+    font-weight: 700;
+    color: var(--text-main);
+    font-family: var(--font-heading);
 }
 
 .header-section p {
     margin: 4px 0 0;
-    color: #666;
+    color: var(--text-muted);
 }
 
 .table-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
     padding: 16px;
+    box-shadow: var(--glass-shadow);
 }
 
 .filter-controls {
@@ -53,6 +61,30 @@
 
 table {
     width: 100%;
+    background: transparent !important;
+}
+
+/* Table Header */
+::ng-deep .mat-mdc-header-cell {
+    background-color: rgba(0, 0, 0, 0.2) !important;
+    color: var(--text-muted) !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+}
+
+/* Table Cells */
+::ng-deep .mat-mdc-cell {
+    color: var(--text-main) !important;
+    font-size: 0.9rem !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    padding: 16px !important;
+}
+
+::ng-deep .mat-mdc-row:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
 }
 
 .user-avatar {
@@ -60,6 +92,7 @@ table {
     height: 32px;
     border-radius: 50%;
     object-fit: cover;
+    border: 1px solid var(--glass-border);
 }
 
 .role-badge {
@@ -71,33 +104,42 @@ table {
 }
 
 .role-badge.superadmin {
-    background-color: #E3F2FD;
-    color: #1565C0;
+    background-color: rgba(59, 130, 246, 0.2);
+    /* Blue */
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 .role-badge.storeadmin {
-    background-color: #E8F5E9;
-    color: #2E7D32;
+    background-color: rgba(16, 185, 129, 0.2);
+    /* Green */
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .role-badge.customer {
-    background-color: #FFF3E0;
-    color: #EF6C00;
+    background-color: rgba(245, 158, 11, 0.2);
+    /* Orange */
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .status-badge {
     padding: 4px 8px;
     border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
 .status-badge.active {
-    background-color: #e8f5e9;
-    color: #2e7d32;
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .status-badge.inactive {
-    background-color: #ffebee;
-    color: #c62828;
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }

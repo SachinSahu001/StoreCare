@@ -1,7 +1,10 @@
 .header {
     height: 64px;
-    background: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
+    background: rgba(15, 23, 42, 0.6);
+    /* Glass Dark */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -22,7 +25,7 @@
     background: none;
     border: none;
     font-size: 1.25rem;
-    color: #64748b;
+    color: var(--text-muted);
     cursor: pointer;
     padding: 0.5rem;
 }
@@ -31,7 +34,9 @@
     margin: 0;
     font-size: 1.1rem;
     font-weight: 600;
-    color: #1e293b;
+    color: var(--text-main);
+    font-family: var(--font-heading);
+    letter-spacing: 0.5px;
 }
 
 .header-right {
@@ -44,12 +49,13 @@
     position: relative;
     cursor: pointer;
     padding: 0.5rem;
-    color: #64748b;
+    color: var(--text-muted);
     transition: color 0.2s;
 }
 
 .notification-bell:hover {
-    color: #4f46e5;
+    color: var(--primary-color);
+    filter: drop-shadow(0 0 5px var(--primary-color));
 }
 
 .notification-bell i {
@@ -60,13 +66,14 @@
     position: absolute;
     top: 4px;
     right: 4px;
-    background: #ef4444;
+    background: var(--danger);
     color: white;
     font-size: 0.65rem;
     font-weight: 700;
     padding: 0.1rem 0.3rem;
     border-radius: 9999px;
-    border: 2px solid white;
+    border: 2px solid var(--bg-dark);
+    /* Blend with header */
 }
 
 .user-menu {
@@ -78,21 +85,24 @@
     border-radius: 0.5rem;
     transition: background-color 0.2s;
     position: relative;
+    border: 1px solid transparent;
 }
 
 .user-menu:hover {
-    background-color: #f1f5f9;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: var(--glass-border);
 }
 
 .user-avatar {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #e2e8f0;
+    background: rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    border: 1px solid var(--glass-border);
 }
 
 .avatar-img {
@@ -103,18 +113,18 @@
 
 .user-avatar i {
     font-size: 1.2rem;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .user-name {
     font-size: 0.9rem;
     font-weight: 500;
-    color: #334155;
+    color: var(--text-main);
 }
 
 .user-menu .fa-chevron-down {
     font-size: 0.75rem;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 /* Dropdown Menu */
@@ -124,10 +134,11 @@
     right: 0;
     margin-top: 0.5rem;
     width: 200px;
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
     border-radius: 0.75rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.3);
     overflow: hidden;
     animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -149,37 +160,45 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem 1rem;
-    color: #475569;
+    color: var(--text-muted);
     text-decoration: none;
     font-size: 0.9rem;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
+    border-left: 2px solid transparent;
 }
 
 .dropdown-menu a:hover {
-    background-color: #f8fafc;
-    color: #1e293b;
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+    border-left-color: var(--primary-color);
 }
 
 .dropdown-menu a i {
     width: 16px;
-    color: #94a3b8;
+    color: var(--text-muted);
+    transition: color 0.2s;
+}
+
+.dropdown-menu a:hover i {
+    color: var(--primary-color);
 }
 
 .dropdown-divider {
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--glass-border);
     margin: 0.25rem 0;
 }
 
 .text-danger {
-    color: #ef4444 !important;
+    color: var(--danger) !important;
 }
 
 .text-danger:hover {
-    background-color: #fef2f2 !important;
+    background-color: rgba(239, 68, 68, 0.1) !important;
+    border-left-color: var(--danger) !important;
 }
 
 .text-danger i {
-    color: #ef4444 !important;
+    color: var(--danger) !important;
 }
 
 /* Responsive */

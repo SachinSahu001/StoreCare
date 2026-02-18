@@ -65,18 +65,33 @@ export class ManageCategoriesComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        const formData = new FormData();
+        formData.append('CategoryName', result.categoryName);
+        if (result.categoryDescription) {
+          formData.append('CategoryDescription', result.categoryDescription);
+        }
+        formData.append('DisplayOrder', result.displayOrder.toString());
+
+        // Handle Active status if needed - currently backend defaults to Active on create.
+        // For update, we might need StatusId, but we don't have the ID map here easily.
+        // For now, we rely on the implementation plan to fix core fields first.
+
+        if (result.file) {
+          formData.append('CategoryImage', result.file);
+        }
+
         if (category) {
-          // Check if result has changed
-          // For now assume changed
-          this.updateCategory(category.id, result);
+          // For updates, we might want to send StatusId if user changed valid active/inactive
+          // But let's stick to core fields for now as per user request
+          this.updateCategory(category.id, formData);
         } else {
-          this.createCategory(result);
+          this.createCategory(formData);
         }
       }
     });
   }
 
-  createCategory(category: Partial<ProductCategory>): void {
+  createCategory(category: FormData): void {
     this.productService.createCategory(category).subscribe({
       next: () => {
         this.showSnackBar('Category created successfully', 'Close');
@@ -89,7 +104,7 @@ export class ManageCategoriesComponent implements OnInit {
     });
   }
 
-  updateCategory(id: string, category: Partial<ProductCategory>): void {
+  updateCategory(id: string, category: FormData): void {
     this.productService.updateCategory(id, category).subscribe({
       next: () => {
         this.showSnackBar('Category updated successfully', 'Close');

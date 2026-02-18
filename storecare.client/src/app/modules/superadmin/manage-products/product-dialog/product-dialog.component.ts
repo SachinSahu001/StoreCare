@@ -18,29 +18,45 @@ export class ProductDialogComponent {
   productForm: FormGroup;
   isEditMode: boolean;
   categories: ProductCategory[];
+  selectedFile: File | null = null;
+  imagePreview: string | null = null;
 
   constructor(
     private fb: FormBuilder,
-    private dialogRef: MatDialogRef<ProductDialogComponent>,
+    public dialogRef: MatDialogRef<ProductDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {
     this.isEditMode = !!data.product.id;
     this.categories = data.categories;
+    this.imagePreview = data.product.imageUrl || null;
 
     this.productForm = this.fb.group({
       productName: [data.product.productName || '', Validators.required],
-      productCode: [data.product.productCode || '', Validators.required],
+      productCode: [{ value: data.product.productCode || 'Auto-generated', disabled: true }],
       categoryId: [data.product.categoryId || '', Validators.required],
-      brand: [data.product.brand || '', Validators.required],
+      brandName: [data.product.brand || '', Validators.required], // Backend expects BrandName, mapped from brand
       model: [data.product.model || ''],
-      description: [data.product.description || ''],
+      productDescription: [data.product.productDescription || ''],
       price: [data.product.price || 0, [Validators.required, Validators.min(0)]],
       mrp: [data.product.mrp || 0, [Validators.min(0)]],
       stockQuantity: [data.product.stockQuantity || 0, [Validators.required, Validators.min(0)]],
       unit: [data.product.unit || 'PCS', Validators.required],
-      imageUrl: [data.product.imageUrl || ''],
+      isFeatured: [data.product.isFeatured || false],
       active: [data.product.active !== undefined ? data.product.active : true]
     });
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreview = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   onCancel(): void {
@@ -49,7 +65,8 @@ export class ProductDialogComponent {
 
   onSave(): void {
     if (this.productForm.valid) {
-      this.dialogRef.close(this.productForm.value);
+      const formValue = this.productForm.getRawValue();
+      this.dialogRef.close({ ...formValue, file: this.selectedFile });
     }
   }
 }

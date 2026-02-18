@@ -33,7 +33,7 @@
       </div>
     </div>
     <div class="store-actions">
-      <button class="btn-edit" (click)="navigateTo('profile')">
+      <button class="btn-edit" routerLink="/dashboard/profile">
         <i class="fas fa-edit"></i> Edit Profile
       </button>
     </div>
@@ -126,10 +126,9 @@
             <td class="stock">{{ item.stockQuantity }}</td>
             <td>{{ item.minStockLevel }}</td>
             <td>
-              <span class="stock-badge"
-                    [class.out]="getStockStatus(item.stockQuantity, item.minStockLevel) === 'out'"
-                    [class.low]="getStockStatus(item.stockQuantity, item.minStockLevel) === 'low'"
-                    [class.good]="getStockStatus(item.stockQuantity, item.minStockLevel) === 'good'">
+              <span class="stock-badge" [class.out]="getStockStatus(item.stockQuantity, item.minStockLevel) === 'out'"
+                [class.low]="getStockStatus(item.stockQuantity, item.minStockLevel) === 'low'"
+                [class.good]="getStockStatus(item.stockQuantity, item.minStockLevel) === 'good'">
                 {{ getStockStatusText(item.stockQuantity, item.minStockLevel) }}
               </span>
             </td>

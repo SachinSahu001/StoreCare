@@ -24,10 +24,13 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatDividerModule } from '@angular/material/divider';
 import { CategoryDialogComponent } from './manage-categories/category-dialog/category-dialog.component';
 import { ProductDialogComponent } from './manage-products/product-dialog/product-dialog.component';
 import { StoreDialogComponent } from './manage-stores/store-dialog/store-dialog.component';
 import { StoreAdminDialogComponent } from './manage-stores/store-admin-dialog/store-admin-dialog.component';
+import { SharedModule } from '../../shared/shared.module';
 
 
 @NgModule({
@@ -60,7 +63,10 @@ import { StoreAdminDialogComponent } from './manage-stores/store-admin-dialog/st
     MatSnackBarModule,
     MatTooltipModule,
     MatProgressSpinnerModule,
-    MatCardModule
+    MatTabsModule,
+    MatDividerModule,
+    MatCardModule,
+    SharedModule
   ]
 })
 export class SuperadminModule { }

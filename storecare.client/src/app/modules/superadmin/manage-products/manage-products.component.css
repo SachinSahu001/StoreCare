@@ -13,34 +13,36 @@
     margin: 0;
     font-size: 1.875rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--text-main);
     letter-spacing: -0.025em;
+    font-family: var(--font-heading);
 }
 
 .header-section p {
     margin: 8px 0 0;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 1rem;
 }
 
 /* Card & Filters */
 .table-card {
-    background: white;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-radius: 16px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
     overflow: hidden;
     padding: 0 !important;
-    /* Reset default padding */
 }
 
 .filter-header {
     padding: 20px 24px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--glass-border);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: white;
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 .search-field {
@@ -50,7 +52,7 @@
 }
 
 ::ng-deep .mat-mdc-text-field-wrapper {
-    background-color: white !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
 }
 
 /* Table Styling */
@@ -60,30 +62,31 @@
 
 table {
     width: 100%;
+    background: transparent !important;
 }
 
 /* Table Header */
 ::ng-deep .mat-mdc-header-cell {
-    background-color: #f8fafc !important;
-    color: #64748b !important;
+    background-color: rgba(0, 0, 0, 0.2) !important;
+    color: var(--text-muted) !important;
     font-size: 0.75rem !important;
     font-weight: 700 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.05em !important;
     padding: 16px 24px !important;
-    border-bottom: 1px solid #e2e8f0 !important;
+    border-bottom: 1px solid var(--glass-border) !important;
 }
 
 /* Table Cells */
 ::ng-deep .mat-mdc-cell {
     padding: 16px 24px !important;
-    color: #334155 !important;
+    color: var(--text-main) !important;
     font-size: 0.9rem !important;
-    border-bottom: 1px solid #f1f5f9 !important;
+    border-bottom: 1px solid var(--glass-border) !important;
 }
 
 ::ng-deep .mat-mdc-row:hover {
-    background-color: #f8fafc !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
 }
 
 ::ng-deep .mat-mdc-row:last-child .mat-mdc-cell {
@@ -95,20 +98,20 @@ table {
     width: 48px;
     height: 48px;
     border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--glass-border);
     object-fit: cover;
     margin-right: 12px;
 }
 
 .product-name {
     font-weight: 600;
-    color: #0f172a;
+    color: var(--text-main);
     font-size: 0.95rem;
 }
 
 .product-brand {
     font-size: 0.8rem;
-    color: #64748b;
+    color: var(--text-muted);
     margin-top: 2px;
 }
 
@@ -124,19 +127,15 @@ table {
 }
 
 .status-badge.active {
-    background-color: #ecfdf5;
-    /* Emerald 50 */
-    color: #059669;
-    /* Emerald 600 */
-    border: 1px solid #d1fae5;
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .status-badge.inactive {
-    background-color: #fef2f2;
-    /* Red 50 */
-    color: #dc2626;
-    /* Red 600 */
-    border: 1px solid #fee2e2;
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 /* Buttons */
@@ -146,7 +145,7 @@ button[mat-raised-button] {
     border-radius: 8px !important;
     font-weight: 600 !important;
     letter-spacing: 0.025em !important;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    box-shadow: var(--glass-shadow) !important;
 }
 
 button[mat-icon-button] {
@@ -154,17 +153,17 @@ button[mat-icon-button] {
     height: 36px !important;
     line-height: 36px !important;
     font-size: 1.2rem !important;
-    color: #94a3b8 !important;
+    color: var(--text-muted) !important;
     transition: all 0.2s !important;
 }
 
 button[mat-icon-button]:hover {
-    background-color: #f1f5f9 !important;
-    color: #4f46e5 !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--primary-color) !important;
 }
 
 button[color="warn"]:hover {
-    color: #ef4444 !important;
+    color: var(--danger) !important;
 }
 
 .loading-spinner {

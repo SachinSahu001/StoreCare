@@ -4,8 +4,9 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SelectionModel } from '@angular/cdk/collections';
-import { ProductService, Product, ProductCategory, StoreProductAssignment } from '../../../services/product.service';
+import { ProductService, ProductCategory, StoreProductAssignment } from '../../../services/product.service';
 import { StoreService, Store } from '../../../services/store.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-manage-assignments',
@@ -14,159 +15,161 @@ import { StoreService, Store } from '../../../services/store.service';
   styleUrl: './manage-assignments.component.css'
 })
 export class ManageAssignmentsComponent implements OnInit {
-  displayedColumns: string[] = ['select', 'imageUrl', 'productName', 'productCode', 'stockQuantity'];
-  dataSource!: MatTableDataSource<Product>;
-  selection = new SelectionModel<Product>(true, []);
+  // Tabs
+  selectedTab = 0; // 0: Manage List, 1: Create New
 
-  categories: ProductCategory[] = [];
-  stores: Store[] = [];
-
-  selectedCategoryId: string = '';
-  selectedStoreId: string = '';
-
-  isLoading = false;
-  existingAssignments: Set<string> = new Set(); // Set of Product IDs already assigned to selected store
-
+  // List View
+  displayedColumns: string[] = ['storeName', 'productName', 'categoryName', 'status', 'actions'];
+  dataSource!: MatTableDataSource<StoreProductAssignment>;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
+
+  // Create View
+  assignmentForm: FormGroup;
+  stores: Store[] = [];
+  categories: ProductCategory[] = [];
+  availableProducts: any[] = [];
+  productSelection = new SelectionModel<any>(true, []);
+  isStep2Loading = false;
+
+  isLoading = false;
 
   constructor(
     private productService: ProductService,
     private storeService: StoreService,
-    private snackBar: MatSnackBar
-  ) { }
+    private snackBar: MatSnackBar,
+    private fb: FormBuilder
+  ) {
+    this.assignmentForm = this.fb.group({
+      storeId: ['', Validators.required],
+      categoryId: ['', Validators.required]
+    });
+  }
 
   ngOnInit(): void {
-    this.loadCategories();
+    this.loadAssignments();
     this.loadStores();
+    this.loadCategories();
+  }
+
+  // ================== LIST VIEW ==================
+  loadAssignments(): void {
+    this.isLoading = true;
+    this.productService.getAssignments().subscribe({
+      next: (data) => {
+        this.dataSource = new MatTableDataSource(data);
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  deleteAssignment(id: string): void {
+    if (confirm('Are you sure you want to remove this assignment?')) {
+      this.productService.deleteAssignment(id).subscribe(() => {
+        this.showSnackBar('Assignment removed');
+        this.loadAssignments();
+      });
+    }
+  }
+
+  // ================== CREATE VIEW ==================
+  loadStores(): void {
+    this.storeService.getStores().subscribe(data => this.stores = data);
   }
 
   loadCategories(): void {
     this.productService.getCategories().subscribe(data => this.categories = data);
   }
 
-  loadStores(): void {
-    this.storeService.getStores().subscribe(data => this.stores = data);
-  }
-
-  onCategoryChange(): void {
-    if (this.selectedCategoryId) {
-      this.loadProducts();
-    } else {
-      if (this.dataSource) this.dataSource.data = [];
+  onStep1Next(): void {
+    if (this.assignmentForm.valid) {
+      this.loadProductsForAssignment();
     }
   }
 
-  onStoreChange(): void {
-    if (this.selectedStoreId) {
-      this.loadExistingAssignments();
-    } else {
-      this.existingAssignments.clear();
-    }
-  }
+  loadProductsForAssignment(): void {
+    const { storeId, categoryId } = this.assignmentForm.value;
+    this.isStep2Loading = true;
+    this.productSelection.clear();
 
-  loadExistingAssignments(): void {
-    if (!this.selectedStoreId) return;
-
-    this.productService.getAssignmentsByStore(this.selectedStoreId).subscribe({
-      next: (assignments) => {
-        this.existingAssignments = new Set(assignments.map(a => a.productId));
-        // Refresh table to update disabled states if needed (though Angular change detection handles this in template)
+    this.productService.getProductsByCategoryForAssignment(categoryId, storeId).subscribe({
+      next: (response) => {
+        this.availableProducts = response.data; // Response data likely contains { id, productName, ... isAssigned }
+        this.isStep2Loading = false;
       },
-      error: (error) => console.error('Error loading assignments', error)
+      error: (err) => {
+        console.error(err);
+        this.showSnackBar('Failed to load products');
+        this.isStep2Loading = false;
+      }
     });
   }
 
-  loadProducts(): void {
-    if (!this.selectedCategoryId) return;
+  // Toggle selection
+  toggleProduct(product: any): void {
+    if (product.isAssigned) return;
+    this.productSelection.toggle(product);
+  }
+
+  isAllSelected(): boolean {
+    const numSelected = this.productSelection.selected.length;
+    const numRows = this.availableProducts.filter(p => !p.isAssigned).length;
+    return numSelected === numRows && numRows > 0;
+  }
+
+  toggleAll(): void {
+    if (this.isAllSelected()) {
+      this.productSelection.clear();
+    } else {
+      this.availableProducts.forEach(p => {
+        if (!p.isAssigned) this.productSelection.select(p);
+      });
+    }
+  }
+
+  submitAssignment(): void {
+    const { storeId, categoryId } = this.assignmentForm.value;
+    const productIds = this.productSelection.selected.map(p => p.id);
+
+    if (productIds.length === 0) return;
 
     this.isLoading = true;
-    this.productService.getProductsByCategory(this.selectedCategoryId).subscribe({
-      next: (data) => {
-        this.dataSource = new MatTableDataSource(data);
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
-        this.selection.clear();
+    const payload = {
+      storeId,
+      categoryId,
+      productIds,
+      canManage: true
+    };
+
+    this.productService.assignProductsByCategory(payload).subscribe({
+      next: (res) => {
+        this.showSnackBar(res.message);
         this.isLoading = false;
+        this.assignmentForm.reset();
+        this.productSelection.clear();
+        this.availableProducts = [];
+        this.selectedTab = 0; // Go back to list
+        this.loadAssignments();
       },
-      error: (error) => {
-        console.error('Error loading products', error);
-        this.snackBar.open('Error loading products', 'Close', { duration: 3000 });
+      error: (err) => {
+        console.error(err);
+        this.showSnackBar('Assignment failed');
         this.isLoading = false;
       }
     });
   }
 
-  /** Whether the number of selected elements matches the total number of rows. */
-  isAllSelected() {
-    if (!this.dataSource) return false;
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.data.filter(row => !this.isAssigned(row.id)).length;
-    return numSelected === numRows && numRows > 0;
+  showSnackBar(msg: string): void {
+    this.snackBar.open(msg, 'Close', { duration: 3000 });
   }
 
-  /** Selects all rows if they are not all selected; otherwise clear selection. */
-  toggleAllRows() {
-    if (this.isAllSelected()) {
-      this.selection.clear();
-      return;
-    }
-
-    this.dataSource.data.forEach(row => {
-      if (!this.isAssigned(row.id)) this.selection.select(row);
-    });
-  }
-
-  isAssigned(productId: string): boolean {
-    return this.existingAssignments.has(productId);
-  }
-
-  assignSelected(): void {
-    if (!this.selectedStoreId || this.selection.isEmpty()) return;
-
-    const productsToAssign = this.selection.selected;
-    let completed = 0;
-    let errors = 0;
-
-    this.isLoading = true;
-
-    // Sequential or Parallel requests? Parallel is faster.
-    // Ideally backend should have a bulk endpoint. Since not specified, I loop.
-    // "Manage Assignments page must allow bulk and single assignment: first select category → load products filtered by category → select store → assign selected products in bulk via checkboxes and submit"
-
-    // I'll use a simple loop.
-    productsToAssign.forEach(product => {
-      const assignment: Partial<StoreProductAssignment> = {
-        storeId: this.selectedStoreId,
-        productId: product.id,
-        sellingPrice: product.price, // Default to product price
-        stockQuantity: 0, // Initial stock 0
-        minStockLevel: 5,
-        maxStockLevel: 100,
-        reorderLevel: 10,
-        statusId: 1,
-        active: true
-      };
-
-      this.productService.createAssignment(assignment).subscribe({
-        next: () => {
-          completed++;
-          this.checkCompletion(productsToAssign.length, completed, errors);
-        },
-        error: () => {
-          errors++;
-          this.checkCompletion(productsToAssign.length, completed, errors);
-        }
-      });
-    });
-  }
-
-  checkCompletion(total: number, completed: number, errors: number): void {
-    if (completed + errors === total) {
-      this.isLoading = false;
-      this.snackBar.open(`Assigned ${completed} products. Failed: ${errors}`, 'Close', { duration: 3000 });
-      this.loadExistingAssignments(); // Refresh existing assignments
-      this.selection.clear();
-    }
+  filteredProducts() {
+    return this.availableProducts;
   }
 }

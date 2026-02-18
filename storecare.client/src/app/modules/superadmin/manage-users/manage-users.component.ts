@@ -3,6 +3,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { StoreAdminDialogComponent } from '../manage-stores/store-admin-dialog/store-admin-dialog.component';
 import { AuthService, UserProfile } from '../../../services/auth.service';
 
 @Component({
@@ -23,7 +25,8 @@ export class ManageUsersComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -49,6 +52,20 @@ export class ManageUsersComponent implements OnInit {
 
   onRoleChange(): void {
     this.loadUsers();
+  }
+
+  createStoreAdmin(): void {
+    const dialogRef = this.dialog.open(StoreAdminDialogComponent, {
+      width: '600px',
+      disableClose: true,
+      data: {} // No initial data needed for creation
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadUsers(); // Refresh list if created
+      }
+    });
   }
 
   applyFilter(event: Event): void {
