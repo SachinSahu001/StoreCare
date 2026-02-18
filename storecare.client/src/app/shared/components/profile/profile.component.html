@@ -1,0 +1,144 @@
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-image-wrapper">
+            <img [src]="user?.profilePictureUrl || 'assets/default-profile.png'" alt="Profile">
+            <label for="profile-upload" class="upload-btn">
+                <i class="fa-solid fa-camera"></i>
+            </label>
+            <input type="file" id="profile-upload" (change)="onFileSelected($event)" accept="image/*" hidden>
+        </div>
+        <div class="profile-info">
+            <h2>{{ user?.fullName }}</h2>
+            <p>{{ user?.role }} <span *ngIf="user?.storeName">| {{ user?.storeName }}</span></p>
+        </div>
+    </div>
+
+    <mat-card>
+        <mat-tab-group>
+            <!-- Tab 1: Profile Details -->
+            <mat-tab label="Profile Details">
+                <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="tab-content">
+                    <div class="form-grid">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Full Name</mat-label>
+                            <input matInput formControlName="fullName">
+                            <mat-error *ngIf="profileForm.get('fullName')?.hasError('required')">Required</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Email</mat-label>
+                            <input matInput formControlName="email">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Phone</mat-label>
+                            <input matInput formControlName="phone">
+                            <mat-error *ngIf="profileForm.get('phone')?.hasError('pattern')">Invalid phone</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Role</mat-label>
+                            <input matInput formControlName="role">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" *ngIf="user?.storeName">
+                            <mat-label>Store</mat-label>
+                            <input matInput formControlName="storeName">
+                        </mat-form-field>
+                    </div>
+                    <div class="actions">
+                        <button mat-raised-button color="primary" type="submit"
+                            [disabled]="profileForm.invalid || profileForm.pristine || isLoading">
+                            Update Profile
+                        </button>
+                    </div>
+                </form>
+            </mat-tab>
+
+            <!-- Tab 2: Change Password -->
+            <mat-tab label="Change Password">
+                <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="tab-content">
+                    <div class="form-column">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Current Password</mat-label>
+                            <input matInput type="password" formControlName="currentPassword">
+                            <mat-error
+                                *ngIf="passwordForm.get('currentPassword')?.hasError('required')">Required</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>New Password</mat-label>
+                            <input matInput type="password" formControlName="newPassword">
+                            <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('minlength')">Min 8
+                                chars</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Confirm New Password</mat-label>
+                            <input matInput type="password" formControlName="confirmNewPassword">
+                            <mat-error *ngIf="passwordForm.hasError('mismatch')">Passwords do not match</mat-error>
+                        </mat-form-field>
+                    </div>
+                    <div class="actions">
+                        <button mat-raised-button color="accent" type="submit"
+                            [disabled]="passwordForm.invalid || isLoading">
+                            Change Password
+                        </button>
+                    </div>
+                </form>
+            </mat-tab>
+
+            <!-- Tab 3: Login History -->
+            <mat-tab label="Login History">
+                <div class="table-container">
+                    <table mat-table [dataSource]="loginHistory" class="full-width-table">
+                        <!-- Login Time Column -->
+                        <ng-container matColumnDef="loginTime">
+                            <th mat-header-cell *matHeaderCellDef> Login Time </th>
+                            <td mat-cell *matCellDef="let element"> {{element.loginTime | date:'medium'}} </td>
+                        </ng-container>
+
+                        <!-- IP Column -->
+                        <ng-container matColumnDef="ipAddress">
+                            <th mat-header-cell *matHeaderCellDef> IP Address </th>
+                            <td mat-cell *matCellDef="let element"> {{element.ipAddress}} </td>
+                        </ng-container>
+
+                        <!-- Browser Column -->
+                        <ng-container matColumnDef="browser">
+                            <th mat-header-cell *matHeaderCellDef> Browser </th>
+                            <td mat-cell *matCellDef="let element"> {{element.browser}} </td>
+                        </ng-container>
+
+                        <!-- Status Column -->
+                        <ng-container matColumnDef="status">
+                            <th mat-header-cell *matHeaderCellDef> Status </th>
+                            <td mat-cell *matCellDef="let element">
+                                <span [class.success]="element.status === 'Success'"
+                                    [class.failed]="element.status !== 'Success'">
+                                    {{element.status}}
+                                </span>
+                            </td>
+                        </ng-container>
+
+                        <!-- Duration Column -->
+                        <ng-container matColumnDef="duration">
+                            <th mat-header-cell *matHeaderCellDef> Duration </th>
+                            <td mat-cell *matCellDef="let element"> {{element.duration}} </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="historyColumns"></tr>
+                        <tr mat-row *matRowDef="let row; columns: historyColumns;"></tr>
+                    </table>
+                    <div *ngIf="loginHistory.length === 0" class="empty-state">
+                        <p>No login history found.</p>
+                    </div>
+                </div>
+            </mat-tab>
+        </mat-tab-group>
+    </mat-card>
+</div>
+
+<div *ngIf="isLoading" class="loader-overlay">
+    <mat-spinner></mat-spinner>
+</div>

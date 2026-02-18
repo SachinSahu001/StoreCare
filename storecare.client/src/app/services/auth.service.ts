@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap, catchError, throwError, timeout } from 'rxjs';
+import { BehaviorSubject, Observable, tap, catchError, throwError, timeout, map } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 
@@ -10,6 +10,8 @@ export interface RegisterRequest {
   phone: string;
   password: string;
   confirmPassword: string;
+  role?: string;
+  storeId?: string;
 }
 
 export interface LoginRequest {
@@ -81,6 +83,42 @@ export class AuthService {
     );
   }
 
+  // ==================== USER MANAGEMENT ====================
+  getUsers(role?: string): Observable<UserProfile[]> {
+    let url = `${this.apiUrl}/users`;
+    if (role) {
+      url += `?role=${role}`;
+    }
+    return this.http.get<any>(url).pipe(
+      map(response => {
+        const users = Array.isArray(response) ? response : (response.data || []);
+        return users.map((user: UserProfile) => ({
+          ...user,
+          profilePictureUrl: this.getAbsoluteImageUrl(user.profilePictureUrl)
+        }));
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  private getAbsoluteImageUrl(url: string | undefined): string | undefined {
+    if (!url) return undefined;
+    if (url.startsWith('http')) return url;
+    return `${environment.apiUrl.replace('/api', '')}/${url.startsWith('/') ? url.substring(1) : url}`;
+  }
+
+  toggleUserStatus(userId: string, active: boolean): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/users/${userId}/toggle-status`, { active }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  createStoreAdmin(data: RegisterRequest): Observable<any> {
+    return this.http.post(`${this.apiUrl}/storeadmin`, data).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   // ==================== LOGIN ====================
   login(data: LoginRequest): Observable<AuthResponse> {
     console.log('Logging in user:', data.email);
@@ -99,7 +137,7 @@ export class AuthService {
           email: response.email,
           role: response.role,
           storeId: response.storeId,
-          profilePictureUrl: response.profilePicture
+          profilePictureUrl: this.getAbsoluteImageUrl(response.profilePicture)
         };
         this.setUser(user);
         this.isAuthenticatedSubject.next(true);
@@ -127,6 +165,10 @@ export class AuthService {
   // ==================== GET PROFILE ====================
   getProfile(): Observable<UserProfile> {
     return this.http.get<UserProfile>(`${this.apiUrl}/profile`).pipe(
+      map(user => ({
+        ...user,
+        profilePictureUrl: this.getAbsoluteImageUrl(user.profilePictureUrl)
+      })),
       tap(user => {
         this.setUser(user);
         this.currentUserSubject.next(user);
@@ -153,6 +195,42 @@ export class AuthService {
 
   removeToken(): void {
     localStorage.removeItem(this.tokenKey);
+  }
+
+  // ==================== PROFILE MANAGEMENT ====================
+  updateProfile(data: Partial<UserProfile>): Observable<UserProfile> {
+    return this.http.put<UserProfile>(`${this.apiUrl}/profile`, data).pipe(
+      map(user => ({
+        ...user,
+        profilePictureUrl: this.getAbsoluteImageUrl(user.profilePictureUrl)
+      })),
+      tap(user => {
+        this.setUser(user); // Update local storage
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  changePassword(data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/change-password`, data).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  uploadProfilePicture(data: FormData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/profile-picture`, data).pipe(
+      map((res: any) => ({
+        ...res,
+        profilePictureUrl: this.getAbsoluteImageUrl(res.profilePictureUrl)
+      })),
+      catchError(this.handleError)
+    );
+  }
+
+  getMyLoginHistory(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/my-login-history`).pipe(
+      catchError(this.handleError)
+    );
   }
 
   hasToken(): boolean {
@@ -211,13 +289,13 @@ export class AuthService {
     console.log('Redirecting based on role:', role);
     switch (role) {
       case 'SuperAdmin':
-        this.router.navigate(['/admin']);
+        this.router.navigate(['/dashboard/superadmin']);
         break;
       case 'StoreAdmin':
-        this.router.navigate(['/store']);
+        this.router.navigate(['/dashboard/storeadmin']);
         break;
       case 'Customer':
-        this.router.navigate(['/']);
+        this.router.navigate(['/dashboard/customer']);
         break;
       default:
         this.router.navigate(['/']);

@@ -4,10 +4,8 @@
 
   <app-sidebar [class.open]="isSidebarOpen"></app-sidebar>
   <div class="main-content">
-    <app-header [userName]="userName"
-                [userRole]="userRole"
-                (logout)="logout()"
-                (sidebarToggle)="toggleSidebar()">
+    <app-header [userName]="userName" [userRole]="userRole" [userProfileImage]="userProfileImage" (logout)="logout()"
+      (sidebarToggle)="toggleSidebar()">
     </app-header>
     <div class="content-wrapper">
       <router-outlet></router-outlet>

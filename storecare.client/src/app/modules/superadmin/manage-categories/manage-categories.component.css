@@ -1,0 +1,108 @@
+.categories-container {
+    padding: 24px;
+}
+
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.header-section h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-main);
+    font-family: var(--font-heading);
+}
+
+.header-section p {
+    margin: 4px 0 0;
+    color: var(--text-muted);
+}
+
+.table-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 16px;
+    /* Keep padding for filter area if needed, or move filter inside */
+    box-shadow: var(--glass-shadow);
+}
+
+/* If the filter is inside the card, we might want to structure it like products */
+.search-field {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 16px;
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    padding: 24px;
+}
+
+.table-container {
+    overflow: auto;
+}
+
+table {
+    width: 100%;
+    background: transparent !important;
+}
+
+/* Table Header */
+::ng-deep .mat-mdc-header-cell {
+    background-color: rgba(0, 0, 0, 0.2) !important;
+    color: var(--text-muted) !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+}
+
+/* Table Cells */
+::ng-deep .mat-mdc-cell {
+    color: var(--text-main) !important;
+    font-size: 0.9rem !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    padding: 16px !important;
+}
+
+::ng-deep .mat-mdc-row:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.category-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+    margin-right: 8px;
+    border: 1px solid var(--glass-border);
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.active {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.inactive {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}

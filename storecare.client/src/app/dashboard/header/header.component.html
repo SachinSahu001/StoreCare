@@ -14,7 +14,10 @@
 
     <div class="user-menu" (click)="toggleUserMenu()">
       <div class="user-avatar">
-        <i class="fas fa-user-circle"></i>
+        <img *ngIf="userProfileImage; else defaultAvatar" [src]="userProfileImage" alt="Profile" class="avatar-img">
+        <ng-template #defaultAvatar>
+          <i class="fas fa-user-circle"></i>
+        </ng-template>
       </div>
       <span class="user-name">{{ userName || 'User' }}</span>
       <i class="fas fa-chevron-down"></i>

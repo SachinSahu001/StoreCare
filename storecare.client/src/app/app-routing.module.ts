@@ -14,6 +14,7 @@ import { DashboardlayoutComponent } from './dashboard/dashboardlayout/dashboardl
 import { SuperadminComponent } from './dashboard/superadmin/superadmin.component';
 import { StoreadminComponent } from './dashboard/storeadmin/storeadmin.component';
 import { CustomerComponent } from './dashboard/customer/customer.component';
+import { ProfileComponent } from './shared/components/profile/profile.component';
 
 
 const routes: Routes = [
@@ -36,7 +37,7 @@ const routes: Routes = [
       // SuperAdmin Routes
       {
         path: 'superadmin',
-        component: SuperadminComponent,
+        loadChildren: () => import('./modules/superadmin/superadmin.module').then(m => m.SuperadminModule),
         canActivate: [AuthGuard],
         data: { role: 'SuperAdmin', title: 'SuperAdmin Dashboard' }
       },
@@ -54,6 +55,13 @@ const routes: Routes = [
         canActivate: [AuthGuard],
         data: { role: 'Customer', title: 'My Account' }
       },
+      // Shared Profile Route
+      {
+        path: 'profile',
+        component: ProfileComponent,
+        canActivate: [AuthGuard],
+        data: { title: 'My Profile' }
+      },
       // Default redirect based on role will be handled by AuthGuard
       { path: '', redirectTo: '/', pathMatch: 'full' }
     ]
@@ -62,9 +70,8 @@ const routes: Routes = [
   // Direct role-based routes (alternative to dashboard layout)
   {
     path: 'admin',
-    component: SuperadminComponent,
-    canActivate: [AuthGuard],
-    data: { role: 'SuperAdmin', title: 'Admin Dashboard' }
+    redirectTo: 'dashboard/superadmin',
+    pathMatch: 'full'
   },
   {
     path: 'store',

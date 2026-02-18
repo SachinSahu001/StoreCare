@@ -1,0 +1,231 @@
+.assignments-container {
+    padding: 24px;
+}
+
+.header-section {
+    margin-bottom: 24px;
+}
+
+.header-section h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-main);
+    font-family: var(--font-heading);
+}
+
+.header-section p {
+    margin: 4px 0 0;
+    color: var(--text-muted);
+}
+
+.filter-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.filter-controls {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-controls button {
+    height: 56px;
+    margin-bottom: 20px;
+}
+
+.table-card {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.table-container {
+    overflow: auto;
+}
+
+table {
+    width: 100%;
+    background: transparent !important;
+}
+
+/* Table Header */
+::ng-deep .mat-mdc-header-cell {
+    background-color: rgba(0, 0, 0, 0.2) !important;
+    color: var(--text-muted) !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+}
+
+/* Table Cells */
+::ng-deep .mat-mdc-cell {
+    color: var(--text-main) !important;
+    font-size: 0.9rem !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    padding: 16px !important;
+}
+
+::ng-deep .mat-mdc-row:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.product-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+    margin-right: 8px;
+    border: 1px solid var(--glass-border);
+}
+
+.product-name {
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.assigned-badge {
+    font-size: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    display: inline-block;
+}
+
+.no-data {
+    text-align: center;
+    padding: 48px;
+    color: var(--text-muted);
+}
+
+/* Wizard for Bulk Assign */
+.wizard-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    padding: 24px;
+    color: var(--text-main);
+}
+
+.wizard-step h3 {
+    margin-top: 0;
+    color: var(--text-main);
+}
+
+.product-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.grid-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    align-items: center;
+}
+
+.product-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.product-item {
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.product-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--primary-color);
+}
+
+.product-item.assigned {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.product-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.product-info {
+    text-align: center;
+}
+
+.product-info .name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+
+.product-info .code {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--success);
+    color: white;
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.actions-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--glass-border);
+}
