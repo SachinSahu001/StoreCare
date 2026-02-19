@@ -14,10 +14,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { ProfileComponent } from './components/profile/profile.component';
+import { ToastComponent } from './components/toast/toast.component';
 
 @NgModule({
     declarations: [
-        ProfileComponent
+        ProfileComponent,
+        ToastComponent
     ],
     imports: [
         CommonModule,
@@ -35,6 +37,7 @@ import { ProfileComponent } from './components/profile/profile.component';
     ],
     exports: [
         ProfileComponent,
+        ToastComponent,
         CommonModule,
         ReactiveFormsModule,
         FormsModule,

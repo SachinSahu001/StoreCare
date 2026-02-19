@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-dashboardlayout',
@@ -12,11 +14,13 @@ export class DashboardlayoutComponent implements OnInit {
   userRole: string | null = null;
   userName: string | null = null;
   userProfileImage: string | null = null;
-  isSidebarOpen = false;
+  isSidebarOpen = true; // Default to open for desktop
+  isMobile = false;
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private breakpointObserver: BreakpointObserver
   ) { }
 
   ngOnInit(): void {
@@ -24,6 +28,26 @@ export class DashboardlayoutComponent implements OnInit {
     this.userName = this.authService.getFullName();
     const user = this.authService.getCurrentUser();
     this.userProfileImage = user?.profilePictureUrl || null;
+
+    // Responsive Breakpoints
+    this.breakpointObserver.observe([
+      '(max-width: 768px)'
+    ]).subscribe(result => {
+      this.isMobile = result.matches;
+      if (this.isMobile) {
+        this.isSidebarOpen = false; // Close on mobile by default
+      } else {
+        this.isSidebarOpen = true; // Open on desktop
+      }
+    });
+
+    // Close sidebar on route change if mobile
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.isSidebarOpen = false;
+      document.body.classList.remove('no-scroll');
+    });
   }
 
   toggleSidebar(): void {
@@ -32,6 +56,7 @@ export class DashboardlayoutComponent implements OnInit {
 
   closeSidebar(): void {
     this.isSidebarOpen = false;
+    document.body.classList.remove('no-scroll');
   }
 
   logout(): void {

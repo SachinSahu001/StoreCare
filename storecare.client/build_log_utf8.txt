@@ -1,0 +1,323 @@
+﻿
+> storecare.client@0.0.0 build
+> ng build
+
+[33mΓ¥»[39m Building...
+[32mΓ£ö[39m Building...
+Application bundle generation failed. [12.255 seconds]
+
+node.exe : 
+[1m[31m[31mX [41;
+31m[[41;97mERROR[41
+;31m][0m 
+[1mTS-996001: The 
+class 
+'CustomerComponent' 
+is listed in the 
+declarations of the 
+NgModule 
+'AppModule', but is 
+not a directive, a 
+component, or a 
+pipe. Either remove 
+it from the 
+NgModule's 
+declarations, or add 
+an appropriate 
+Angular 
+decorator.[0m 
+[1m[35m[plugin 
+angular-compiler][0m
+At C:\Program Files\n
+odejs\npm.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: ([1m[3   
+ 1m[31mX...r-com    
+piler][0m:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+
+    src/app/app.modul
+e.ts:52:4:
+[37m      52 Γöé    
+ [32mCustomerCompone
+nt[37m,
+         Γò╡     [32
+m~~~~~~~~~~~~~~~~~[0
+m
+
+  
+'CustomerComponent' 
+is declared here.
+
+    src/app/dashboard
+/customer/customer.co
+mponent.ts:48:13:
+[37m      48 Γöé 
+export class [32mCus
+tomerComponent[37m 
+implements OnInit, 
+OnDestroy {
+         Γò╡         
+     [32m~~~~~~~~~~~
+~~~~~~[0m
+
+
+[31mX [41;31m[[41;
+97mERROR[41;31m][0m
+ [1mTS2307: Cannot 
+find module '../../se
+rvices/cart.service' 
+or its corresponding 
+type 
+declarations.[0m 
+[1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/dashboard
+/customer/customer.co
+mponent.ts:5:28:
+[37m      5 Γöé 
+import { CartService 
+} from [32m'../../se
+rvices/cart.service'
+[37m;
+        Γò╡          
+                   [
+32m~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;
+97mERROR[41;31m][0m
+ [1mTS2307: Cannot 
+find module '../../se
+rvices/wishlist.servi
+ce' or its 
+corresponding type 
+declarations.[0m 
+[1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/dashboard
+/customer/customer.co
+mponent.ts:6:32:
+[37m      6 Γöé 
+import { 
+WishlistService } 
+from [32m'../../serv
+ices/wishlist.service
+'[37m;
+        Γò╡          
+                     
+  [32m~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~[
+0m
+
+
+[31mX [41;31m[[41;
+97mERROR[41;31m][0m
+ [1mTS-992003: No 
+suitable injection 
+token for parameter 
+'cartService' of 
+class 
+'CustomerComponent'.
+  Consider using the 
+@Inject decorator to 
+specify an injection 
+token.[0m 
+[1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/dashboard
+/customer/customer.co
+mponent.ts:90:12:
+[37m      90 Γöé    
+ private [32mcartSer
+vice[37m: 
+CartService,
+         Γò╡         
+    
+[32m~~~~~~~~~~~[0m
+
+  This type does not 
+have a value, so it 
+cannot be used as 
+injection token.
+
+    src/app/dashboard
+/customer/customer.co
+mponent.ts:90:25:
+[37m      90 Γöé    
+ private 
+cartService: [32mCar
+tService[37m,
+         Γò╡         
+                 
+[32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;
+97mERROR[41;31m][0m
+ [1mTS2339: 
+Property 'avatar' 
+does not exist on 
+type 
+'UserProfile'.[0m 
+[1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/dashboard
+/customer/customer.co
+mponent.ts:114:29:
+[37m      114 Γöé   
+    this.userAvatar 
+= user.[32mavatar[3
+7m || null;
+          Γò╡        
+                     
+ [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;
+97mERROR[41;31m][0m
+ [1mTS7006: 
+Parameter 'count' 
+implicitly has an 
+'any' type.[0m 
+[1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/dashboard
+/customer/customer.co
+mponent.ts:202:17:
+[37m      202 Γöé   
+    .subscribe([32mc
+ount[37m => 
+this.cartCount = 
+count);
+          Γò╡        
+          
+[32m~~~~~[0m
+
+
+[31mX [41;31m[[41;
+97mERROR[41;31m][0m
+ [1mTS7006: 
+Parameter 'count' 
+implicitly has an 
+'any' type.[0m 
+[1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/dashboard
+/customer/customer.co
+mponent.ts:207:17:
+[37m      207 Γöé   
+    .subscribe([32mc
+ount[37m => 
+this.wishlistCount = 
+count);
+          Γò╡        
+          
+[32m~~~~~[0m
+
+
+[31mX [41;31m[[41;
+97mERROR[41;31m][0m
+ [1mTS7006: 
+Parameter 'response' 
+implicitly has an 
+'any' type.[0m 
+[1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/dashboard
+/customer/customer.co
+mponent.ts:341:15:
+[37m      341 Γöé   
+      next: 
+([32mresponse[37m) 
+=> {
+          Γò╡        
+        
+[32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;
+97mERROR[41;31m][0m
+ [1mTS7006: 
+Parameter 'response' 
+implicitly has an 
+'any' type.[0m 
+[1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/dashboard
+/customer/customer.co
+mponent.ts:365:15:
+[37m      365 Γöé   
+      next: 
+([32mresponse[37m) 
+=> {
+          Γò╡        
+        
+[32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;
+97mERROR[41;31m][0m
+ [1mTS7006: 
+Parameter 'response' 
+implicitly has an 
+'any' type.[0m 
+[1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/dashboard
+/customer/customer.co
+mponent.ts:388:15:
+[37m      388 Γöé   
+      next: 
+([32mresponse[37m) 
+=> {
+          Γò╡        
+        
+[32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;
+97mERROR[41;31m][0m
+ [1mTS2554: 
+Expected 0 
+arguments, but got 
+2.[0m 
+[1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/dashboard
+/customer/customer.co
+mponent.ts:408:36:
+[37m      408 Γöé ..
+.s.productService.get
+Products([32mthis.cu
+rrentPage, this.items
+PerPage[37m)
+          Γò╡        
+                     
+    [32m~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~[0m
+
+[39m[22m

@@ -4,7 +4,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ProductService, Product, ProductCategory } from '../../../services/product.service';
+import { ProductService, Product, ProductCategory } from '../../../core/services/product.service';
 import { ProductDialogComponent } from './product-dialog/product-dialog.component';
 
 @Component({
@@ -36,13 +36,13 @@ export class ManageProductsComponent implements OnInit {
   loadProducts(): void {
     this.isLoading = true;
     this.productService.getProducts().subscribe({
-      next: (data) => {
+      next: (data: Product[]) => {
         this.dataSource = new MatTableDataSource(data);
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
         this.isLoading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading products', error);
         this.showSnackBar('Error loading products', 'Close');
         this.isLoading = false;
@@ -52,10 +52,10 @@ export class ManageProductsComponent implements OnInit {
 
   loadCategories(): void {
     this.productService.getCategories().subscribe({
-      next: (data) => {
+      next: (data: ProductCategory[]) => {
         this.categories = data;
       },
-      error: (error) => console.error('Error loading categories', error)
+      error: (error: any) => console.error('Error loading categories', error)
     });
   }
 
@@ -110,7 +110,7 @@ export class ManageProductsComponent implements OnInit {
         this.showSnackBar('Product created successfully', 'Close');
         this.loadProducts();
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error creating product', error);
         this.showSnackBar('Error creating product', 'Close');
       }
@@ -123,7 +123,7 @@ export class ManageProductsComponent implements OnInit {
         this.showSnackBar('Product updated successfully', 'Close');
         this.loadProducts();
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error updating product', error);
         this.showSnackBar('Error updating product', 'Close');
       }
@@ -137,7 +137,7 @@ export class ManageProductsComponent implements OnInit {
           this.showSnackBar('Product deleted successfully', 'Close');
           this.loadProducts();
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error deleting product', error);
           this.showSnackBar('Error deleting product', 'Close');
         }

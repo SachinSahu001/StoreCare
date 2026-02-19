@@ -1,67 +1,176 @@
 <div class="dashboard-container">
+  <!-- Header Section with Date -->
   <div class="header-section">
-    <h1>SuperAdmin Dashboard</h1>
-    <p>Overview of system statistics</p>
+    <div class="header-left">
+      <h1>SuperAdmin Dashboard</h1>
+      <p class="subtitle">{{ getGreeting() }}, Super Admin! Here's your system overview</p>
+    </div>
+    <div class="header-right">
+      <div class="date-display">
+        <mat-icon>calendar_today</mat-icon>
+        <span>{{ currentDate | date:'EEEE, MMMM d, y' }}</span>
+      </div>
+      <button class="refresh-btn" (click)="refreshData()" [disabled]="loading">
+        <mat-icon [class.spinning]="loading">refresh</mat-icon>
+        Refresh
+      </button>
+    </div>
   </div>
 
-  <div *ngIf="loading" class="loading-spinner">
-    <mat-spinner diameter="50"></mat-spinner>
+  <!-- Loading State with Skeleton -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="stats-grid">
+      <div class="skeleton-card" *ngFor="let i of [1,2,3,4]">
+        <div class="skeleton-icon"></div>
+        <div class="skeleton-content">
+          <div class="skeleton-title"></div>
+          <div class="skeleton-subtitle"></div>
+          <div class="skeleton-value"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div *ngIf="!loading && stats" class="stats-grid">
+  <!-- Error State -->
+  <div *ngIf="!loading && error" class="error-state">
+    <mat-icon class="error-icon">error_outline</mat-icon>
+    <h3>Failed to load dashboard data</h3>
+    <p>{{ error }}</p>
+    <button class="retry-btn" (click)="refreshData()">
+      <mat-icon>refresh</mat-icon>
+      Try Again
+    </button>
+  </div>
+
+  <!-- Stats Grid -->
+  <div *ngIf="!loading && !error && stats" class="stats-grid">
     <!-- Stores Card -->
-    <mat-card class="stat-card">
+    <mat-card class="stat-card" (click)="navigateToStores()">
       <mat-card-header>
         <div mat-card-avatar class="stat-icon store-icon">
           <mat-icon>store</mat-icon>
         </div>
-        <mat-card-title>Stores</mat-card-title>
-        <mat-card-subtitle>Total Registered</mat-card-subtitle>
+        <mat-card-title>Total Stores</mat-card-title>
+        <mat-card-subtitle>Registered businesses</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
-        <h2 class="stat-value">{{ stats.totalStores || 0 }}</h2>
+        <h2 class="stat-value">{{ formatNumber(stats.totalStores) }}</h2>
+        <div class="stat-trend" [class]="getTrendClass(stats.storeGrowth)">
+          <mat-icon>{{ getTrendIcon(stats.storeGrowth) }}</mat-icon>
+          <span>{{ formatPercentage(stats.storeGrowth) }} from last month</span>
+        </div>
       </mat-card-content>
+      <mat-card-actions>
+        <button class="card-action-btn">View Details <mat-icon>chevron_right</mat-icon></button>
+      </mat-card-actions>
     </mat-card>
 
     <!-- Products Card -->
-    <mat-card class="stat-card">
+    <mat-card class="stat-card" (click)="navigateToProducts()">
       <mat-card-header>
         <div mat-card-avatar class="stat-icon product-icon">
           <mat-icon>inventory_2</mat-icon>
         </div>
-        <mat-card-title>Products</mat-card-title>
-        <mat-card-subtitle>Total Catalog</mat-card-subtitle>
+        <mat-card-title>Total Products</mat-card-title>
+        <mat-card-subtitle>Active listings</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
-        <h2 class="stat-value">{{ stats.totalProducts || 0 }}</h2>
+        <h2 class="stat-value">{{ formatNumber(stats.totalProducts) }}</h2>
+        <div class="stat-trend" [class]="getTrendClass(stats.productGrowth)">
+          <mat-icon>{{ getTrendIcon(stats.productGrowth) }}</mat-icon>
+          <span>{{ formatPercentage(stats.productGrowth) }} from last month</span>
+        </div>
       </mat-card-content>
+      <mat-card-actions>
+        <button class="card-action-btn">View Details <mat-icon>chevron_right</mat-icon></button>
+      </mat-card-actions>
     </mat-card>
 
     <!-- Categories Card -->
-    <mat-card class="stat-card">
+    <mat-card class="stat-card" (click)="navigateToCategories()">
       <mat-card-header>
         <div mat-card-avatar class="stat-icon category-icon">
           <mat-icon>category</mat-icon>
         </div>
         <mat-card-title>Categories</mat-card-title>
-        <mat-card-subtitle>Active Categories</mat-card-subtitle>
+        <mat-card-subtitle>Active categories</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
-        <h2 class="stat-value">{{ stats.totalCategories || 0 }}</h2>
+        <h2 class="stat-value">{{ formatNumber(stats.totalCategories) }}</h2>
+        <div class="stat-trend" [class]="getTrendClass(stats.categoryGrowth)">
+          <mat-icon>{{ getTrendIcon(stats.categoryGrowth) }}</mat-icon>
+          <span>{{ formatPercentage(stats.categoryGrowth) }} from last month</span>
+        </div>
       </mat-card-content>
+      <mat-card-actions>
+        <button class="card-action-btn">View Details <mat-icon>chevron_right</mat-icon></button>
+      </mat-card-actions>
     </mat-card>
 
     <!-- Customers Card -->
-    <mat-card class="stat-card">
+    <mat-card class="stat-card" (click)="navigateToCustomers()">
       <mat-card-header>
         <div mat-card-avatar class="stat-icon customer-icon">
           <mat-icon>people</mat-icon>
         </div>
         <mat-card-title>Customers</mat-card-title>
-        <mat-card-subtitle>Registered Users</mat-card-subtitle>
+        <mat-card-subtitle>Registered users</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
-        <h2 class="stat-value">{{ stats.totalCustomers || 0 }}</h2>
+        <h2 class="stat-value">{{ formatNumber(stats.totalCustomers) }}</h2>
+        <div class="stat-trend" [class]="getTrendClass(stats.customerGrowth)">
+          <mat-icon>{{ getTrendIcon(stats.customerGrowth) }}</mat-icon>
+          <span>{{ formatPercentage(stats.customerGrowth) }} from last month</span>
+        </div>
+      </mat-card-content>
+      <mat-card-actions>
+        <button class="card-action-btn">View Details <mat-icon>chevron_right</mat-icon></button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- Additional Stats Section -->
+  <div *ngIf="!loading && !error && stats" class="additional-stats">
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>Quick Overview</mat-card-title>
+        <mat-card-subtitle>Key metrics at a glance</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="quick-stats-grid">
+          <div class="quick-stat-item" (click)="navigateToStores()">
+            <span class="quick-stat-label">Active Stores</span>
+            <span class="quick-stat-value">{{ formatNumber(stats.activeStores) }}</span>
+          </div>
+          <div class="quick-stat-item" (click)="navigateToStores()">
+            <span class="quick-stat-label">Pending Approvals</span>
+            <span class="quick-stat-value">{{ formatNumber(stats.pendingApprovals) }}</span>
+          </div>
+          <div class="quick-stat-item" (click)="navigateToCustomers()">
+            <span class="quick-stat-label">New Users Today</span>
+            <span class="quick-stat-value">{{ formatNumber(stats.newUsersToday) }}</span>
+          </div>
+          <div class="quick-stat-item" (click)="navigateToRevenue()">
+            <span class="quick-stat-label">Total Revenue</span>
+            <span class="quick-stat-value">{{ formatCurrency(stats.totalRevenue) }}</span>
+          </div>
+          <div class="quick-stat-item" (click)="navigateToOrders()">
+            <span class="quick-stat-label">Total Orders</span>
+            <span class="quick-stat-value">{{ formatNumber(stats.totalOrders) }}</span>
+          </div>
+          <div class="quick-stat-item" (click)="navigateToRevenue()">
+            <span class="quick-stat-label">Revenue Today</span>
+            <span class="quick-stat-value">{{ formatCurrency(stats.revenueToday) }}</span>
+          </div>
+          <div class="quick-stat-item">
+            <span class="quick-stat-label">Avg Order Value</span>
+            <span class="quick-stat-value">{{ formatCurrency(stats.averageOrderValue) }}</span>
+          </div>
+          <div class="quick-stat-item">
+            <span class="quick-stat-label">Conversion Rate</span>
+            <span class="quick-stat-value">{{ formatPercentage(stats.conversionRate) }}</span>
+          </div>
+        </div>
       </mat-card-content>
     </mat-card>
   </div>

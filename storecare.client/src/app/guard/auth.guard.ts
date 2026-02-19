@@ -44,13 +44,13 @@ export class AuthGuard implements CanActivate {
   private redirectBasedOnRole(role: string | null): void {
     switch (role) {
       case 'SuperAdmin':
-        this.router.navigate(['/admin']);
+        this.router.navigate(['/dashboard/superadmin']);
         break;
       case 'StoreAdmin':
-        this.router.navigate(['/store']);
+        this.router.navigate(['/dashboard/storeadmin']);
         break;
       case 'Customer':
-        this.router.navigate(['/account']);
+        this.router.navigate(['/dashboard/customer']);
         break;
       default:
         this.router.navigate(['/']);

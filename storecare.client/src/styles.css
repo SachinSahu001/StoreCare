@@ -4,43 +4,54 @@
 
 :root {
     /* --- Color Palette --- */
-    --primary-color: #6366f1;
-    /* Indigo 500 */
-    --primary-hover: #4f46e5;
-    /* Indigo 600 */
-    --secondary-color: #ec4899;
-    /* Pink 500 */
-    --accent-color: #14b8a6;
-    /* Teal 500 */
+    --primary-color: #3EB489;
+    /* Mint */
+    --primary-hover: #2FA97E;
+    /* Soft Mint Hover */
+    --secondary-color: #F8F6F1;
+    /* Bone (Background) */
+    --sidebar-bg: #FFFFFF;
+    /* Sidebar Background */
+    --accent-color: #2C2C2C;
+    /* Dark Text */
 
     /* --- Backgrounds --- */
-    /* Deep Blue/Black Gradient Background */
-    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    --bg-dark: #0f172a;
-
-    /* --- Glass Effect Variables --- */
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    --glass-blur: blur(12px);
+    --bg-body: #F8F6F1;
+    --bg-white: #FFFFFF;
 
     /* --- Typography --- */
     --font-heading: 'Outfit', sans-serif;
     --font-body: 'Inter', sans-serif;
 
     /* --- Text Colors --- */
-    --text-main: #f8fafc;
-    /* Slate 50 */
-    --text-muted: #94a3b8;
-    /* Slate 400 */
-    --text-placeholder: #64748b;
-    /* Slate 500 */
+    --text-main: #2C2C2C;
+    --text-muted: #6B7280;
+    --text-light: #9CA3AF;
+    --border-soft: #E5E7EB;
+
+    /* --- Shadows & Radius --- */
+    --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+
+    /* --- Spacing --- */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
 
     /* --- Status Colors --- */
     --success: #10b981;
+    /* Green */
     --warning: #f59e0b;
+    /* Amber */
     --danger: #ef4444;
+    /* Red */
     --info: #3b82f6;
+    /* Blue */
 }
 
 /* =========================================
@@ -56,12 +67,9 @@ html {
     padding: 0;
     height: 100%;
     font-family: var(--font-body);
-    background: var(--bg-dark);
-    /* Fallback */
-    background: var(--bg-gradient);
+    background: var(--bg-body);
     color: var(--text-main);
     overflow-x: hidden;
-    /* Prevent horizontal scroll */
 }
 
 /* Scrollbar Styling */
@@ -116,18 +124,15 @@ i.fab {
    UTILITIES
    ========================================= */
 
-/* Glass Card - The Core Component */
+/* Clean Card - Enterprise Style */
 .glass-card,
 mat-card {
-    background: var(--glass-bg) !important;
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    /* Safari */
-    border: 1px solid var(--glass-border) !important;
-    box-shadow: var(--glass-shadow);
-    border-radius: 16px !important;
+    background: var(--bg-white) !important;
+    border: 1px solid var(--border-soft) !important;
+    box-shadow: var(--shadow-card);
+    border-radius: var(--radius-xl) !important;
     color: var(--text-main) !important;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .glass-card:hover {
@@ -233,7 +238,7 @@ table.mat-mdc-table {
 }
 
 .mat-mdc-header-row {
-    background: rgba(255, 255, 255, 0.03) !important;
+    background: var(--bg-body) !important;
 }
 
 .mat-mdc-header-cell {
@@ -247,7 +252,7 @@ table.mat-mdc-table {
 
 .mat-mdc-cell {
     color: var(--text-main) !important;
-    border-bottom: 1px solid var(--glass-border) !important;
+    border-bottom: 1px solid var(--border-soft) !important;
     padding: 16px !important;
 }
 
@@ -320,14 +325,10 @@ table.mat-mdc-table {
 }
 
 .mat-mdc-dialog-surface {
-    background: #1e293b !important;
-    /* Solid dark background for modals to ensure readability over content */
-    background: rgba(30, 41, 59, 0.95) !important;
-    /* Slightly transparent */
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px !important;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+    background: var(--bg-white) !important;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-card) !important;
     color: var(--text-main) !important;
 }
 
@@ -394,11 +395,10 @@ table.mat-mdc-table {
 }
 
 .mat-drawer {
-    background: rgba(15, 23, 42, 0.8) !important;
-    /* Dark sidebar */
-    backdrop-filter: blur(10px);
-    border-right: 1px solid var(--glass-border) !important;
+    background: var(--sidebar-bg) !important;
+    border-right: 1px solid var(--border-soft) !important;
     color: var(--text-main) !important;
+    box-shadow: var(--shadow-soft);
 }
 
 /* Loader Overlay */

@@ -4,7 +4,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SelectionModel } from '@angular/cdk/collections';
-import { ProductService, ProductCategory, StoreProductAssignment } from '../../../services/product.service';
+import { ProductService, ProductCategory, StoreProductAssignment } from '../../../core/services/product.service';
 import { StoreService, Store } from '../../../services/store.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
