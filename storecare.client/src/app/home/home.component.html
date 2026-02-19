@@ -1,41 +1,16 @@
 <div class="home-container">
-  <!-- Hero Section with Slider -->
-  <section class="hero-section">
-    <div class="hero-slider">
-      <div class="hero-slide active">
-        <div class="hero-content">
-          <span class="hero-subtitle">Welcome to StoreCare</span>
-          <h1 class="hero-title">Your One-Stop Shop for <span class="highlight">Quality Products</span></h1>
-          <p class="hero-description">Discover thousands of products at amazing prices with fast delivery worldwide.</p>
-          <div class="hero-buttons">
-            <button class="btn btn-primary" (click)="navigateToShop()">
-              <i class="fas fa-shopping-bag"></i>
-              Shop Now
-            </button>
-            <button class="btn btn-outline" (click)="navigateToAbout()">
-              <i class="fas fa-play"></i>
-              Learn More
-            </button>
-          </div>
-        </div>
-        <div class="hero-image">
-          <img src="assets/images/hero-image.png" alt="Shopping">
-        </div>
-      </div>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1 *ngIf="isLoggedIn; else guestTitle">Welcome Back, {{userName}}</h1>
+      <ng-template #guestTitle>
+        <h1>Welcome to StoreCare</h1>
+      </ng-template>
+      <p>Manage your store efficiently with our premium tools.</p>
+      <button (click)="navigateToShop()">Go to Dashboard</button>
     </div>
-    <div class="hero-stats">
-      <div class="stat-item">
-        <span class="stat-number">50K+</span>
-        <span class="stat-label">Happy Customers</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number">10K+</span>
-        <span class="stat-label">Products</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number">24/7</span>
-        <span class="stat-label">Support</span>
-      </div>
+    <div class="hero-image">
+      <img src="assets/images/hero-image.png" alt="StoreCare Dashboard" />
     </div>
   </section>
 

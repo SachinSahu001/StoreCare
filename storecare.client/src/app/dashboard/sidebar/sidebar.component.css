@@ -1,12 +1,9 @@
 .sidebar {
   width: 260px;
   height: 100vh;
-  background: rgba(15, 23, 42, 0.6);
-  /* Glass Dark */
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-right: 1px solid var(--glass-border);
-  color: var(--text-muted);
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border-soft);
+  color: var(--text-main);
   position: fixed;
   left: 0;
   top: 0;
@@ -14,13 +11,15 @@
   flex-direction: column;
   z-index: 1000;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-soft);
 }
 
 .sidebar-header {
   padding: 1.5rem 2rem;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--border-soft);
+  background-color: var(--sidebar-bg);
 }
 
 .logo {
@@ -37,7 +36,6 @@
 .logo i {
   color: var(--primary-color);
   font-size: 1.5rem;
-  filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.5));
 }
 
 .sidebar-nav {
@@ -77,9 +75,9 @@
 }
 
 .nav-link:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-main);
-  border-color: var(--glass-border);
+  background: var(--secondary-color);
+  color: var(--primary-color);
+  border-color: transparent;
 }
 
 .nav-link:hover i {
@@ -87,7 +85,8 @@
 }
 
 .nav-link.active {
-  background: linear-gradient(90deg, rgba(99, 102, 241, 0.2), transparent);
+  background: rgba(62, 180, 137, 0.1);
+  /* Mint 10% */
   color: var(--primary-color);
   border-left: 3px solid var(--primary-color);
   border-radius: 0 0.5rem 0.5rem 0;
@@ -95,7 +94,6 @@
 
 .nav-link.active i {
   color: var(--primary-color);
-  filter: drop-shadow(0 0 5px var(--primary-color));
 }
 
 .nav-label {
@@ -104,8 +102,8 @@
 
 .sidebar-footer {
   padding: 1.5rem;
-  border-top: 1px solid var(--glass-border);
-  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid var(--border-soft);
+  background: var(--sidebar-bg);
 }
 
 .user-info {
@@ -176,9 +174,8 @@
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-105%);
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
-    background: #0f172a;
-    /* Solid fallback for mobile performance/readability */
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
+    background: var(--sidebar-bg);
   }
 
   .sidebar.open {

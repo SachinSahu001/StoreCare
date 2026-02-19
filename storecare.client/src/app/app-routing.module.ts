@@ -62,28 +62,9 @@ const routes: Routes = [
         canActivate: [AuthGuard],
         data: { title: 'My Profile' }
       },
-      // Default redirect based on role will be handled by AuthGuard
-      { path: '', redirectTo: '/', pathMatch: 'full' }
+      // Default redirect based on role will be handled by AuthGuard or component logic
+      { path: '', redirectTo: 'customer', pathMatch: 'full' }
     ]
-  },
-
-  // Direct role-based routes (alternative to dashboard layout)
-  {
-    path: 'admin',
-    redirectTo: 'dashboard/superadmin',
-    pathMatch: 'full'
-  },
-  {
-    path: 'store',
-    component: StoreadminComponent,
-    canActivate: [AuthGuard],
-    data: { role: 'StoreAdmin', title: 'Store Dashboard' }
-  },
-  {
-    path: 'account',
-    component: CustomerComponent,
-    canActivate: [AuthGuard],
-    data: { role: 'Customer', title: 'My Account' }
   },
 
   // Wildcard route - redirect to home for any unknown paths

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { StoreService } from '../../services/store.service';
-import { ProductService } from '../../services/product.service';
+import { ProductService } from '../../core/services/product.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -73,7 +73,7 @@ export class StoreadminComponent implements OnInit {
   }
 
   navigateTo(route: string): void {
-    this.router.navigate([`/store/${route}`]);
+    this.router.navigate([`/dashboard/storeadmin/${route}`]);
   }
 
   getStockStatus(quantity: number, minLevel: number): string {

@@ -215,6 +215,28 @@ public class ProductController : ControllerBase
     }
 
     // ===============================
+    // GET STATUSES (Helper)
+    // ===============================
+    [HttpGet("statuses")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetStatuses()
+    {
+        try
+        {
+            var statuses = await _context.MasterTables
+                .Where(m => m.TableName == "Status" && m.Active == true)
+                .Select(m => new { m.Id, Value = m.TableValue })
+                .ToListAsync();
+            return Ok(statuses);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetStatuses failed");
+            return StatusCode(500, new { message = "Failed to retrieve statuses.", error = ex.Message });
+        }
+    }
+
+    // ===============================
     // GET ALL PRODUCTS
     // ===============================
     [HttpGet]
@@ -458,8 +480,11 @@ public class ProductController : ControllerBase
     // ===============================
     // UPDATE PRODUCT (SuperAdmin only)
     // ===============================
+    // ===============================
+    // UPDATE PRODUCT (SuperAdmin & StoreAdmin)
+    // ===============================
     [HttpPut("{id}")]
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize(Roles = "SuperAdmin,StoreAdmin")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UpdateProduct(string id, [FromForm] ProductUpdateDto dto)
     {
@@ -476,6 +501,20 @@ public class ProductController : ControllerBase
 
             if (product == null)
                 return NotFound(new { message = "Product not found." });
+
+            // StoreAdmin Security Check
+            if (User.IsInRole("StoreAdmin"))
+            {
+                var storeId = User.FindFirst("StoreId")?.Value;
+                var isAssigned = await _context.StoreProductAssignments
+                    .AnyAsync(x => x.StoreId == storeId && x.ProductId == id && x.Active == true);
+
+                if (!isAssigned)
+                {
+                    _logger.LogWarning("StoreAdmin {UserId} attempted unauthorized update on Product {ProductId}", currentUser.Id, id);
+                    return Forbid();
+                }
+            }
 
             bool hasChanges = false;
 
@@ -528,6 +567,7 @@ public class ProductController : ControllerBase
             // Handle product image upload
             if (dto.ProductImage != null && dto.ProductImage.Length > 0)
             {
+                // Delete old image only if new image provided
                 var newImagePath = await SaveProductImage(dto.ProductImage, product.Id, product.ProductImage);
                 if (newImagePath != product.ProductImage)
                 {

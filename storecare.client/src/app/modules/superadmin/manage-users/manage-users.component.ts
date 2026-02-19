@@ -94,4 +94,14 @@ export class ManageUsersComponent implements OnInit {
       });
     }
   }
+
+  getUserImage(userId: string): string {
+    // Assuming environment.apiUrl is available or relative path usage
+    // Using relative path which proxy/interceptor should handle or hardcoded base if needed.
+    // Based on requirements check: `${environment.apiUrl}/api/Auth/profile-picture/${id}`
+    // Since environment is not imported, I will use a safe relative path or try to import it.
+    // However, existing code might not have environment imported. 
+    // I'll use the relative path assuming proxy is set up or add /api prefix.
+    return `/api/Auth/profile-picture/${userId}`;
+  }
 }

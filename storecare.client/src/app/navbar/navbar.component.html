@@ -3,7 +3,7 @@
     <div class="nav-brand">
       <a routerLink="/" class="brand-logo">
         <i class="fas fa-store"></i>
-        StoreCare
+        <span class="brand-text">StoreCare</span>
       </a>
     </div>
 
@@ -11,37 +11,73 @@
       <ul class="nav-links">
         <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a></li>
         <li><a routerLink="/products" routerLinkActive="active">Products</a></li>
-        <li><a routerLink="/Register" >Register</a></li>
+
+        <!-- Public Links -->
+        <ng-container *ngIf="!isLoggedIn">
+          <li><a routerLink="/login" routerLinkActive="active">Login</a></li>
+          <li><a routerLink="/Register" routerLinkActive="active">Register</a></li>
+        </ng-container>
+
+        <!-- Authenticated Links -->
+        <ng-container *ngIf="isLoggedIn">
+          <li><a [routerLink]="getDashboardRoute()" routerLinkActive="active">Dashboard</a></li>
+        </ng-container>
+
         <li><a routerLink="/about" routerLinkActive="active">About</a></li>
         <li><a routerLink="/contact" routerLinkActive="active">Contact</a></li>
       </ul>
 
       <div class="nav-actions">
         <div class="search-box">
-          <input type="text" placeholder="Search products...">
+          <input type="text" placeholder="Search products..." class="search-input">
           <button class="search-btn">
             <i class="fas fa-search"></i>
           </button>
         </div>
 
         <div class="action-icons">
-          <a href="#" class="icon-link">
+          <a href="#" class="icon-link cart-icon">
             <i class="fas fa-shopping-cart"></i>
             <span class="badge">3</span>
           </a>
-          <a href="#" class="icon-link">
-            <i class="far fa-heart"></i>
-            <span class="badge">2</span>
-          </a>
-          <a href="#" class="icon-link">
+
+          <!-- Profile Dropdown (Logged In) -->
+          <div class="profile-dropdown" *ngIf="isLoggedIn">
+            <a href="javascript:void(0)" class="icon-link profile-trigger">
+              <div class="profile-image-container">
+                <img *ngIf="userProfileImage" [src]="userProfileImage" alt="Profile" class="nav-profile-img">
+                <i *ngIf="!userProfileImage" class="fas fa-user-circle"></i>
+              </div>
+            </a>
+            <div class="dropdown-menu">
+              <div class="dropdown-header">
+                <span class="user-greeting">Hello,</span>
+                <span class="user-name">{{ userName || 'User' }}</span>
+              </div>
+              <div class="dropdown-divider"></div>
+              <a [routerLink]="getDashboardRoute()"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+              <a routerLink="/dashboard/profile"><i class="fas fa-user"></i> Profile</a>
+              <a routerLink="/dashboard/orders"><i class="fas fa-shopping-bag"></i> Orders</a>
+              <a routerLink="/dashboard/settings"><i class="fas fa-cog"></i> Settings</a>
+              <div class="dropdown-divider"></div>
+              <a (click)="logout()" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+          </div>
+
+          <!-- Login Icon (Logged Out) -->
+          <a *ngIf="!isLoggedIn" routerLink="/login" class="icon-link login-icon">
             <i class="far fa-user"></i>
           </a>
         </div>
       </div>
     </div>
 
-    <div class="menu-toggle" (click)="toggleMenu()">
-      <i class="fas" [class.fa-bars]="!isMenuOpen" [class.fa-times]="isMenuOpen"></i>
+    <div class="menu-toggle" (click)="toggleMenu()" [class.active]="isMenuOpen">
+      <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
     </div>
   </div>
 </nav>

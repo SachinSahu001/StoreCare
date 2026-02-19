@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { StoreService } from '../../services/store.service';
-import { ProductService } from '../../services/product.service';
+import { ProductService } from '../../core/services/product.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -91,6 +91,6 @@ export class SuperadminComponent implements OnInit {
   }
 
   navigateTo(route: string): void {
-    this.router.navigate([`/admin/${route}`]);
+    this.router.navigate([`/dashboard/superadmin/${route}`]);
   }
 }

@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Product, ProductCategory } from '../../../../services/product.service';
+import { Product, ProductCategory } from '../../../../core/services/product.service';
 
 interface DialogData {
   product: Partial<Product>;

@@ -4,7 +4,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ProductService, ProductCategory } from '../../../services/product.service';
+import { ProductService, ProductCategory } from '../../../core/services/product.service';
 import { CategoryDialogComponent } from './category-dialog/category-dialog.component';
 
 @Component({

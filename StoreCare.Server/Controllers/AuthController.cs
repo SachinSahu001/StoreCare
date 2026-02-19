@@ -663,8 +663,11 @@ public class AuthController : ControllerBase
     // ===============================
     // 12. GET ALL USERS (SuperAdmin only)
     // ===============================
+    // ===============================
+    // 12. GET ALL USERS (SuperAdmin + StoreAdmin)
+    // ===============================
     [HttpGet("users")]
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize(Roles = "SuperAdmin,StoreAdmin")]
     public async Task<IActionResult> GetAllUsers()
     {
         var currentUserId = GetUserIdFromToken();
@@ -672,10 +675,20 @@ public class AuthController : ControllerBase
 
         try
         {
-            var users = await _context.Users
+            var query = _context.Users
                 .Include(u => u.Role)
                 .Include(u => u.Status)
                 .Include(u => u.Store)
+                .AsQueryable();
+
+            if (User.IsInRole("StoreAdmin"))
+            {
+                var storeId = User.FindFirst("StoreId")?.Value;
+                // StoreAdmin sees only Customers of their store
+                query = query.Where(u => u.StoreId == storeId && u.Role.TableValue == "Customer");
+            }
+
+            var users = await query
                 .Select(u => new
                 {
                     u.Id,

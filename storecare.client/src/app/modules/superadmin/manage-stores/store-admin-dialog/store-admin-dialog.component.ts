@@ -2,7 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AuthService, RegisterRequest } from '../../../../services/auth.service';
-import { ProductService, ProductCategory } from '../../../../services/product.service';
+import { ProductService, ProductCategory } from '../../../../core/services/product.service';
 import { StoreService } from '../../../../services/store.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SelectionModel } from '@angular/cdk/collections';

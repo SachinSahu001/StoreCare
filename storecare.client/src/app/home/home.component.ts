@@ -11,6 +11,7 @@ import { AuthService } from '../services/auth.service';
 export class HomeComponent implements OnInit {
   isLoggedIn = false;
   userRole: string | null = null;
+  userName: string | null = null;
 
   categories = [
     { id: 1, name: 'Electronics', icon: 'fas fa-laptop', items: 245, slug: 'electronics' },
@@ -148,6 +149,7 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.isLoggedIn = this.authService.isLoggedIn();
     this.userRole = this.authService.getRole();
+    this.userName = this.authService.getFullName();
   }
 
   // Navigation methods

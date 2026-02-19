@@ -39,18 +39,18 @@ export class SidebarComponent implements OnInit {
     } else if (this.userRole === 'StoreAdmin') {
       this.menuItems = [
         ...commonItems,
-        { label: 'Products', icon: 'fas fa-box', route: 'products' },
-        { label: 'Orders', icon: 'fas fa-shopping-cart', route: 'orders' },
-        { label: 'Inventory', icon: 'fas fa-warehouse', route: 'inventory' },
-        { label: 'Customers', icon: 'fas fa-users', route: 'customers' }
+        { label: 'Products', icon: 'fas fa-box', route: '/dashboard/storeadmin/products' },
+        { label: 'Orders', icon: 'fas fa-shopping-cart', route: '/dashboard/storeadmin/orders' },
+        { label: 'Inventory', icon: 'fas fa-warehouse', route: '/dashboard/storeadmin/inventory' },
+        { label: 'Customers', icon: 'fas fa-users', route: '/dashboard/storeadmin/customers' }
       ];
     } else if (this.userRole === 'Customer') {
       this.menuItems = [
         ...commonItems,
-        { label: 'My Orders', icon: 'fas fa-shopping-bag', route: 'orders' },
-        { label: 'Wishlist', icon: 'fas fa-heart', route: 'wishlist' },
-        { label: 'Addresses', icon: 'fas fa-address-book', route: 'addresses' },
-        { label: 'Payments', icon: 'fas fa-credit-card', route: 'payments' }
+        { label: 'My Orders', icon: 'fas fa-shopping-bag', route: '/dashboard/customer/orders' },
+        { label: 'Wishlist', icon: 'fas fa-heart', route: '/dashboard/customer/wishlist' },
+        { label: 'Addresses', icon: 'fas fa-address-book', route: '/dashboard/customer/addresses' },
+        { label: 'Payments', icon: 'fas fa-credit-card', route: '/dashboard/customer/payments' }
       ];
     }
   }
