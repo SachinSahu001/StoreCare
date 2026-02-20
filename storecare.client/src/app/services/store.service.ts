@@ -15,7 +15,7 @@ export interface Store {
   storeLogoUrl?: string;
   statusId: number;
   status?: string;
-  statusColor?: string;
+  statusColor?: string;          // 'green' | 'red' | 'orange' etc.
   createdBy?: string;
   createdDate?: Date;
   modifiedBy?: string;
@@ -23,6 +23,14 @@ export interface Store {
   isActive: boolean;
   totalEmployees?: number;
   totalProducts?: number;
+  assignedProducts?: { productId: string; productName: string; canManage: boolean }[];
+}
+
+export interface StoreStatistics {
+  totalStores: number;
+  activeStores: number;
+  totalProducts: number;
+  totalAssignments: number;
 }
 
 @Injectable({
@@ -97,5 +105,12 @@ export class StoreService {
 
   toggleStoreStatus(id: string, statusId: number): Observable<any> {
     return this.http.patch(`${this.apiUrl}/${id}/status`, { statusId });
+  }
+
+  /** SuperAdmin dashboard summary statistics. */
+  getStatistics(): Observable<StoreStatistics> {
+    return this.http.get<{ data: StoreStatistics }>(`${this.apiUrl}/statistics`).pipe(
+      map(res => res.data)
+    );
   }
 }

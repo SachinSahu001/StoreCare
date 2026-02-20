@@ -51,6 +51,7 @@ public class ProductController : ControllerBase
         public string ModifiedBy { get; set; } = string.Empty;
         public DateTime? ModifiedDate { get; set; }
         public bool IsActive { get; set; }
+        public int AssignedStoreCount { get; set; }
         public List<StoreAssignmentDto> AssignedStores { get; set; } = new();
     }
 
@@ -119,7 +120,7 @@ public class ProductController : ControllerBase
         public string Status { get; set; } = string.Empty;
         public int StatusId { get; set; }
         public string StatusColor { get; set; } = string.Empty;
-        public int StoreCount { get; set; }
+        public int AssignedStoreCount { get; set; }
         public int ItemCount { get; set; }
     }
 
@@ -141,33 +142,24 @@ public class ProductController : ControllerBase
             // Validate category
             var category = await _context.ProductCategories
                 .FirstOrDefaultAsync(c => c.Id == dto.CategoryId && c.Active == true);
-
             if (category == null)
                 return BadRequest(new { message = "Invalid or inactive category." });
 
-            // Validate unique product name within category
+            // Unique product name within category
             if (await _context.Products.AnyAsync(p =>
                 p.ProductName == dto.ProductName.Trim() && p.CategoryId == dto.CategoryId))
-            {
                 return BadRequest(new { message = "Product with this name already exists in the category." });
-            }
 
-            // Get active status
             var activeStatus = await _context.MasterTables
-                .FirstOrDefaultAsync(m => m.TableName == "Status" && m.TableValue == "Active");
+                .FirstOrDefaultAsync(m => m.TableName == "Status" && m.TableValue == "Active")
+                ?? throw new Exception("Active status not configured.");
 
-            if (activeStatus == null)
-                return StatusCode(500, new { message = "Active status not configured." });
-
-            // Generate unique product code
             var productCode = "PRD-" + Guid.NewGuid().ToString()[..8].ToUpper();
             var productId = Guid.NewGuid().ToString();
 
             string? imagePath = null;
             if (dto.ProductImage != null && dto.ProductImage.Length > 0)
-            {
                 imagePath = await SaveProductImage(dto.ProductImage, productId);
-            }
 
             var product = new Product
             {
@@ -191,20 +183,13 @@ public class ProductController : ControllerBase
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Product created successfully: {ProductName} by {UserName}",
-                product.ProductName, currentUserName);
+            _logger.LogInformation("Product created successfully: {ProductName} by {UserName}", product.ProductName, currentUserName);
 
             return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, new
             {
                 success = true,
                 message = "Product created successfully.",
-                data = new
-                {
-                    product.Id,
-                    product.ProductCode,
-                    product.ProductName,
-                    CategoryName = category.CategoryName
-                }
+                data = new { product.Id, product.ProductCode, product.ProductName, CategoryName = category.CategoryName }
             });
         }
         catch (Exception ex)
@@ -237,10 +222,9 @@ public class ProductController : ControllerBase
     }
 
     // ===============================
-    // GET ALL PRODUCTS
+    // GET ALL PRODUCTS (Role‑based)
     // ===============================
     [HttpGet]
-    [Authorize(Roles = "SuperAdmin,StoreAdmin,Customer")]
     public async Task<IActionResult> GetAllProducts()
     {
         var currentUserId = GetUserIdFromToken();
@@ -260,8 +244,17 @@ public class ProductController : ControllerBase
                 .Include(p => p.Items)
                 .Where(p => p.Active == true);
 
-            // Role-based filtering
-            if (User.IsInRole("StoreAdmin"))
+            // Role‑based filtering
+            if (User.IsInRole("SuperAdmin"))
+            {
+                // SuperAdmin sees all products (active/inactive) – no extra filter
+                query = _context.Products
+                    .Include(p => p.Category)
+                    .Include(p => p.Status)
+                    .Include(p => p.StoreProductAssignments)
+                    .Include(p => p.Items); // include inactive as well
+            }
+            else if (User.IsInRole("StoreAdmin"))
             {
                 var userStoreId = currentUser?.StoreId;
                 if (string.IsNullOrEmpty(userStoreId))
@@ -270,12 +263,13 @@ public class ProductController : ControllerBase
                 query = query.Where(p => p.StoreProductAssignments
                     .Any(sp => sp.StoreId == userStoreId && sp.Active == true));
             }
-            else if (User.IsInRole("Customer") || !User.Identity?.IsAuthenticated == true)
+            else // Customer or Unauthenticated
             {
-                query = query.Where(p => p.Status.TableValue == "Active");
+                // Only active products that are assigned to at least one active store
+                query = query.Where(p => p.Status.TableValue == "Active" &&
+                    p.StoreProductAssignments.Any(sp => sp.Active == true && sp.Store.Active == true));
             }
 
-            // First fetch raw data without URL transformation
             var products = await query
                 .OrderByDescending(p => p.IsFeatured)
                 .ThenByDescending(p => p.CreatedDate)
@@ -290,12 +284,11 @@ public class ProductController : ControllerBase
                     p.IsFeatured,
                     Status = p.Status.TableValue,
                     StatusId = p.StatusId,
-                    StoreCount = p.StoreProductAssignments.Count(sp => sp.Active == true),
+                    AssignedStoreCount = p.StoreProductAssignments.Count(sp => sp.Active == true),
                     ItemCount = p.Items.Count(i => i.Active == true)
                 })
                 .ToListAsync();
 
-            // Apply URL transformation in memory
             var response = products.Select(p => new ProductListResponseDto
             {
                 Id = p.Id,
@@ -309,7 +302,7 @@ public class ProductController : ControllerBase
                 Status = p.Status,
                 StatusId = p.StatusId,
                 StatusColor = GetStatusColor(p.Status),
-                StoreCount = p.StoreCount,
+                AssignedStoreCount = p.AssignedStoreCount,
                 ItemCount = p.ItemCount
             }).ToList();
 
@@ -331,7 +324,6 @@ public class ProductController : ControllerBase
     // GET PRODUCT BY ID
     // ===============================
     [HttpGet("{id}")]
-    [Authorize(Roles = "SuperAdmin,StoreAdmin,Customer")]
     public async Task<IActionResult> GetProductById(string id)
     {
         var currentUserId = GetUserIdFromToken();
@@ -339,8 +331,7 @@ public class ProductController : ControllerBase
             .Include(u => u.Role)
             .FirstOrDefaultAsync(u => u.Id == currentUserId);
 
-        _logger.LogInformation("GetProductById called by UserId: {UserId}, ProductId: {ProductId}",
-            currentUserId, id);
+        _logger.LogInformation("GetProductById called by UserId: {UserId}, ProductId: {ProductId}", currentUserId, id);
 
         try
         {
@@ -354,20 +345,20 @@ public class ProductController : ControllerBase
             if (product == null)
                 return NotFound(new { message = "Product not found." });
 
-            // Role-based access check
+            // Role‑based access check
             if (User.IsInRole("StoreAdmin"))
             {
                 var userStoreId = currentUser?.StoreId;
                 if (!product.StoreProductAssignments.Any(sp => sp.StoreId == userStoreId && sp.Active == true))
                 {
-                    _logger.LogWarning("StoreAdmin {UserId} attempted to access unauthorized product {ProductId}",
-                        currentUserId, id);
+                    _logger.LogWarning("StoreAdmin {UserId} attempted to access unauthorized product {ProductId}", currentUserId, id);
                     return Forbid();
                 }
             }
-            else if (User.IsInRole("Customer") || !User.Identity?.IsAuthenticated == true)
+            else if (!User.Identity?.IsAuthenticated == true || User.IsInRole("Customer"))
             {
-                if (product.Status.TableValue != "Active")
+                if (product.Status.TableValue != "Active" ||
+                    !product.StoreProductAssignments.Any(sp => sp.Active == true && sp.Store.Active == true))
                 {
                     return NotFound(new { message = "Product not found." });
                 }
@@ -398,6 +389,7 @@ public class ProductController : ControllerBase
                 ModifiedBy = product.ModifiedBy ?? "Not modified",
                 ModifiedDate = product.ModifiedDate,
                 IsActive = product.Active ?? false,
+                AssignedStoreCount = product.StoreProductAssignments.Count(sp => sp.Active == true),
                 AssignedStores = product.StoreProductAssignments
                     .Where(sp => sp.Active == true)
                     .Select(sp => new StoreAssignmentDto
@@ -419,7 +411,7 @@ public class ProductController : ControllerBase
     }
 
     // ===============================
-    // GET PRODUCTS BY CATEGORY
+    // GET PRODUCTS BY CATEGORY (Public)
     // ===============================
     [HttpGet("category/{categoryId}")]
     [AllowAnonymous]
@@ -450,7 +442,6 @@ public class ProductController : ControllerBase
                 })
                 .ToListAsync();
 
-            // Apply URL transformation in memory
             var response = products.Select(p => new
             {
                 p.Id,
@@ -478,10 +469,7 @@ public class ProductController : ControllerBase
     }
 
     // ===============================
-    // UPDATE PRODUCT (SuperAdmin only)
-    // ===============================
-    // ===============================
-    // UPDATE PRODUCT (SuperAdmin & StoreAdmin)
+    // UPDATE PRODUCT (SuperAdmin & StoreAdmin with permission)
     // ===============================
     [HttpPut("{id}")]
     [Authorize(Roles = "SuperAdmin,StoreAdmin")]
@@ -491,27 +479,27 @@ public class ProductController : ControllerBase
         var currentUser = await _context.Users.FindAsync(GetUserIdFromToken());
         var currentUserName = currentUser?.FullName ?? "System";
 
-        _logger.LogInformation("UpdateProduct called by: {UserName}, ProductId: {ProductId}",
-            currentUserName, id);
+        _logger.LogInformation("UpdateProduct called by: {UserName}, ProductId: {ProductId}", currentUserName, id);
 
         try
         {
             var product = await _context.Products
+                .Include(p => p.StoreProductAssignments)
                 .FirstOrDefaultAsync(p => p.Id == id && p.Active == true);
 
             if (product == null)
                 return NotFound(new { message = "Product not found." });
 
-            // StoreAdmin Security Check
+            // StoreAdmin permission check: must have CanManage == true for this product in their store
             if (User.IsInRole("StoreAdmin"))
             {
                 var storeId = User.FindFirst("StoreId")?.Value;
-                var isAssigned = await _context.StoreProductAssignments
-                    .AnyAsync(x => x.StoreId == storeId && x.ProductId == id && x.Active == true);
+                var assignment = product.StoreProductAssignments
+                    .FirstOrDefault(sp => sp.StoreId == storeId && sp.Active == true);
 
-                if (!isAssigned)
+                if (assignment == null || assignment.CanManage != true)
                 {
-                    _logger.LogWarning("StoreAdmin {UserId} attempted unauthorized update on Product {ProductId}", currentUser.Id, id);
+                    _logger.LogWarning("StoreAdmin {UserId} attempted unauthorized update on Product {ProductId}", currentUser?.Id, id);
                     return Forbid();
                 }
             }
@@ -525,9 +513,7 @@ public class ProductController : ControllerBase
                     p.ProductName == dto.ProductName.Trim() &&
                     p.CategoryId == product.CategoryId &&
                     p.Id != id))
-                {
                     return BadRequest(new { message = "Product with this name already exists in the category." });
-                }
 
                 product.ProductName = dto.ProductName.Trim();
                 hasChanges = true;
@@ -539,12 +525,10 @@ public class ProductController : ControllerBase
                 hasChanges = true;
             }
 
-            // Update category if provided
             if (!string.IsNullOrWhiteSpace(dto.CategoryId) && dto.CategoryId != product.CategoryId)
             {
                 var category = await _context.ProductCategories
                     .FirstOrDefaultAsync(c => c.Id == dto.CategoryId && c.Active == true);
-
                 if (category == null)
                     return BadRequest(new { message = "Invalid category." });
 
@@ -567,7 +551,6 @@ public class ProductController : ControllerBase
             // Handle product image upload
             if (dto.ProductImage != null && dto.ProductImage.Length > 0)
             {
-                // Delete old image only if new image provided
                 var newImagePath = await SaveProductImage(dto.ProductImage, product.Id, product.ProductImage);
                 if (newImagePath != product.ProductImage)
                 {
@@ -576,12 +559,11 @@ public class ProductController : ControllerBase
                 }
             }
 
-            // Update status
-            if (dto.StatusId.HasValue && dto.StatusId != product.StatusId)
+            // Update status (only SuperAdmin can change status)
+            if (User.IsInRole("SuperAdmin") && dto.StatusId.HasValue && dto.StatusId.Value != product.StatusId)
             {
                 var statusExists = await _context.MasterTables
                     .AnyAsync(m => m.Id == dto.StatusId.Value && m.TableName == "Status" && m.Active == true);
-
                 if (!statusExists)
                     return BadRequest(new { message = "Invalid status selected." });
 
@@ -594,8 +576,7 @@ public class ProductController : ControllerBase
                 product.ModifiedDate = GetIndianTime();
                 product.ModifiedBy = currentUserName;
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("Product updated successfully: {ProductId} by {UserName}",
-                    id, currentUserName);
+                _logger.LogInformation("Product updated successfully: {ProductId} by {UserName}", id, currentUserName);
             }
 
             return await GetProductById(id);
@@ -615,8 +596,7 @@ public class ProductController : ControllerBase
     public async Task<IActionResult> UpdateProductStatus(string id, [FromBody] ProductStatusUpdateDto dto)
     {
         var currentUser = await _context.Users.FindAsync(GetUserIdFromToken());
-        _logger.LogInformation("UpdateProductStatus called by: {UserName}, ProductId: {ProductId}",
-            currentUser?.FullName, id);
+        _logger.LogInformation("UpdateProductStatus called by: {UserName}, ProductId: {ProductId}", currentUser?.FullName, id);
 
         try
         {
@@ -628,7 +608,6 @@ public class ProductController : ControllerBase
 
             var statusExists = await _context.MasterTables
                 .AnyAsync(m => m.Id == dto.StatusId && m.TableName == "Status" && m.Active == true);
-
             if (!statusExists)
                 return BadRequest(new { message = "Invalid status selected." });
 
@@ -638,14 +617,9 @@ public class ProductController : ControllerBase
 
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Product status updated: {ProductId} to StatusId: {StatusId}",
-                id, dto.StatusId);
+            _logger.LogInformation("Product status updated: {ProductId} to StatusId: {StatusId}", id, dto.StatusId);
 
-            return Ok(new
-            {
-                success = true,
-                message = "Product status updated successfully."
-            });
+            return Ok(new { success = true, message = "Product status updated successfully." });
         }
         catch (Exception ex)
         {
@@ -662,8 +636,7 @@ public class ProductController : ControllerBase
     public async Task<IActionResult> DeleteProduct(string id)
     {
         var currentUser = await _context.Users.FindAsync(GetUserIdFromToken());
-        _logger.LogInformation("DeleteProduct called by: {UserName}, ProductId: {ProductId}",
-            currentUser?.FullName, id);
+        _logger.LogInformation("DeleteProduct called by: {UserName}, ProductId: {ProductId}", currentUser?.FullName, id);
 
         try
         {
@@ -675,14 +648,9 @@ public class ProductController : ControllerBase
             if (product == null)
                 return NotFound(new { message = "Product not found." });
 
-            // Check if product has items
+            // Check if product has active items
             if (product.Items.Any(i => i.Active == true))
-            {
-                return BadRequest(new
-                {
-                    message = "Cannot delete product with active items. Please deactivate or delete items first."
-                });
-            }
+                return BadRequest(new { message = "Cannot delete product with active items. Please deactivate or delete items first." });
 
             // Soft delete product
             product.Active = false;
@@ -699,14 +667,9 @@ public class ProductController : ControllerBase
 
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Product deleted successfully: {ProductId} by {UserName}",
-                id, currentUser?.FullName);
+            _logger.LogInformation("Product deleted successfully: {ProductId} by {UserName}", id, currentUser?.FullName);
 
-            return Ok(new
-            {
-                success = true,
-                message = "Product deleted successfully."
-            });
+            return Ok(new { success = true, message = "Product deleted successfully." });
         }
         catch (Exception ex)
         {
@@ -729,7 +692,8 @@ public class ProductController : ControllerBase
                 .Include(p => p.Status)
                 .Where(p => p.Active == true &&
                             p.Status.TableValue == "Active" &&
-                            p.IsFeatured == true)
+                            p.IsFeatured == true &&
+                            p.StoreProductAssignments.Any(sp => sp.Active == true && sp.Store.Active == true))
                 .OrderByDescending(p => p.CreatedDate)
                 .Take(8)
                 .Select(p => new
@@ -815,14 +779,11 @@ public class ProductController : ControllerBase
         if (file == null || file.Length == 0)
             return null;
 
-        // Validate file size (max 2MB)
         if (file.Length > 2 * 1024 * 1024)
             throw new InvalidOperationException("Image size exceeds 2MB limit");
 
-        // Validate file type
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
-
         if (!allowedExtensions.Contains(extension))
             throw new InvalidOperationException("Invalid file format. Only images are allowed.");
 
@@ -830,7 +791,6 @@ public class ProductController : ControllerBase
         if (!Directory.Exists(uploadsFolder))
             Directory.CreateDirectory(uploadsFolder);
 
-        // Delete old image if exists
         if (!string.IsNullOrEmpty(oldImagePath))
         {
             var oldFileName = Path.GetFileName(oldImagePath);

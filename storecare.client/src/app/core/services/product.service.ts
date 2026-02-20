@@ -3,6 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
+export interface AssignedStore {
+    storeId: string;
+    storeName: string;
+    canManage: boolean;
+}
+
 export interface ProductCategory {
     id: string;
     categoryCode: string;
@@ -14,19 +20,24 @@ export interface ProductCategory {
     displayOrder: number;
     statusId: number;
     status?: string;
+    statusColor?: string;       // 'green' | 'red' | 'orange' etc.
     createdBy: string;
     createdDate: Date;
     modifiedBy: string;
     modifiedDate: Date;
     isActive: boolean;
     active?: boolean;
+    totalProducts?: number;     // count of active products in category
+    items?: number;             // alias used by home template
+    icon?: string;              // icon class for home template fallback
+    products?: Product[];       // full product list (detail endpoint)
 }
 
 export interface Product {
     id: string;
     productCode: string;
     productName: string;
-    productDescription: string; // Changed from description
+    productDescription: string;
     price: number;
     mrp: number;
     gstRate: number;
@@ -43,6 +54,7 @@ export interface Product {
     hsnCode: string;
     statusId: number;
     status?: string;
+    statusColor?: string;       // 'green' | 'red' etc.
     createdBy: string;
     createdDate: Date;
     modifiedBy: string;
@@ -50,6 +62,10 @@ export interface Product {
     isFeatured?: boolean;
     isActive: boolean;
     active?: boolean;
+    soldCount?: number;
+    assignedStoreCount?: number; // how many stores carry this product
+    itemCount?: number;          // alias for assignedStoreCount
+    assignedStores?: AssignedStore[]; // detail endpoint only
 }
 
 export interface StoreProductAssignment {
@@ -58,6 +74,7 @@ export interface StoreProductAssignment {
     storeName?: string;
     productId: string;
     productName?: string;
+    productImageUrl?: string;
     sellingPrice: number;
     stockQuantity: number;
     minStockLevel: number;
@@ -66,12 +83,32 @@ export interface StoreProductAssignment {
     shelfLocation: string;
     statusId: number;
     status?: string;
+    statusColor?: string;
+    canManage?: boolean;        // StoreAdmin-specific: can they edit this product?
     createdBy: string;
     createdDate: Date;
     modifiedBy: string;
     modifiedDate: Date;
     isActive: boolean;
 }
+
+export interface AvailableProductGroup {
+    categoryId: string;
+    categoryName: string;
+    products: (Product & { isAssigned: boolean })[];
+}
+
+export interface BulkAssignRequest {
+    storeId: string;
+    productIds: string[];
+}
+
+export interface CategoryAssignRequest {
+    storeId: string;
+    categoryId: string;
+}
+
+export type CategoryReorderRequest = Record<string, number>;
 
 @Injectable({
     providedIn: 'root'
@@ -237,8 +274,49 @@ export class ProductService {
         return this.http.put<StoreProductAssignment>(`${this.assignmentApiUrl}/${id}`, assignment);
     }
 
-    assignProductsByCategory(data: any): Observable<any> {
+    assignProductsByCategory(data: CategoryAssignRequest): Observable<any> {
         return this.http.post(`${this.assignmentApiUrl}/by-category`, data);
+    }
+
+    /** Returns products assigned to the currently logged-in StoreAdmin's store. */
+    getStoreProducts(): Observable<StoreProductAssignment[]> {
+        return this.http.get<{ data: StoreProductAssignment[] }>(`${this.assignmentApiUrl}/store-products`).pipe(
+            map(res => {
+                const items = res.data || [];
+                return items.map((a: any) => ({
+                    ...a,
+                    productImageUrl: this.getAbsoluteImageUrl(a.productImageUrl)
+                }));
+            })
+        );
+    }
+
+    /** Returns all active products grouped by category, with isAssigned flag for a given store. */
+    getAvailableProducts(storeId: string): Observable<AvailableProductGroup[]> {
+        return this.http.get<{ data: AvailableProductGroup[] }>(
+            `${this.assignmentApiUrl}/available-products/${storeId}`
+        ).pipe(
+            map(res => {
+                const groups = res.data || [];
+                return groups.map(group => ({
+                    ...group,
+                    products: group.products.map((p: any) => ({
+                        ...p,
+                        imageUrl: this.getAbsoluteImageUrl(p.productImageUrl || p.productImage) || ''
+                    }))
+                }));
+            })
+        );
+    }
+
+    /** Bulk assign (or reactivate) a list of products to a store. */
+    bulkAssignProducts(req: BulkAssignRequest): Observable<any> {
+        return this.http.post(`${this.assignmentApiUrl}/bulk`, req);
+    }
+
+    /** Soft-delete (unassign) ALL products from a store. */
+    unassignAllFromStore(storeId: string): Observable<any> {
+        return this.http.delete(`${this.assignmentApiUrl}/store/${storeId}`);
     }
 
     getProductsByCategoryForAssignment(categoryId: string, storeId?: string): Observable<any> {
@@ -258,4 +336,10 @@ export class ProductService {
             })
         );
     }
+
+    /** Reorder categories — send a map of { categoryId: newDisplayOrder }. SuperAdmin only. */
+    reorderCategories(order: CategoryReorderRequest): Observable<any> {
+        return this.http.post(`${this.categoryApiUrl}/reorder`, order);
+    }
 }
+
