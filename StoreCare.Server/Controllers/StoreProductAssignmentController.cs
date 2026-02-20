@@ -120,7 +120,7 @@ public class StoreProductAssignmentController : ControllerBase
     }
 
     // ===============================
-    // CREATE ASSIGNMENT
+    // CREATE ASSIGNMENT (with reactivation)
     // ===============================
     [HttpPost]
     public async Task<IActionResult> CreateAssignment([FromBody] AssignmentCreateDto dto)
@@ -132,64 +132,49 @@ public class StoreProductAssignmentController : ControllerBase
 
         try
         {
-            // Validate store
             var store = await _context.Stores
                 .FirstOrDefaultAsync(s => s.Id == dto.StoreId && s.Active == true);
-
             if (store == null)
                 return BadRequest(new { message = "Invalid or inactive store." });
 
-            // Validate product
             var product = await _context.Products
                 .Include(p => p.Category)
                 .FirstOrDefaultAsync(p => p.Id == dto.ProductId && p.Active == true);
-
             if (product == null)
                 return BadRequest(new { message = "Invalid or inactive product." });
 
-            // Check for EXISTING assignment (Active OR Inactive)
-            var existingAssignment = await _context.StoreProductAssignments
-                .FirstOrDefaultAsync(sp => sp.StoreId == dto.StoreId &&
-                                           sp.ProductId == dto.ProductId);
+            var existing = await _context.StoreProductAssignments
+                .FirstOrDefaultAsync(sp => sp.StoreId == dto.StoreId && sp.ProductId == dto.ProductId);
 
-            if (existingAssignment != null)
+            var activeStatus = await _context.MasterTables
+                .FirstOrDefaultAsync(m => m.TableName == "Status" && m.TableValue == "Active")
+                ?? throw new Exception("Active status not configured.");
+
+            if (existing != null)
             {
-                if (existingAssignment.Active == true)
+                if (existing.Active == true)
                 {
                     return Ok(new { success = false, message = "Product already assigned to this store." });
                 }
                 else
                 {
-                    // REACTIVATE existing soft-deleted record
-                    existingAssignment.Active = true;
-                    existingAssignment.ModifiedBy = currentUserName;
-                    existingAssignment.ModifiedDate = GetIndianTime();
-                    // Optionally update CanManage if provided
-                    existingAssignment.CanManage = dto.CanManage;
-                    
+                    // Reactivate
+                    existing.Active = true;
+                    existing.CanManage = dto.CanManage;
+                    existing.StatusId = activeStatus.Id;
+                    existing.ModifiedBy = currentUserName;
+                    existing.ModifiedDate = GetIndianTime();
+
                     await _context.SaveChangesAsync();
 
                     return Ok(new
                     {
                         success = true,
                         message = "Product assignment reactivated successfully.",
-                        data = new
-                        {
-                            existingAssignment.Id,
-                            storeName = store.StoreName,
-                            productName = product.ProductName,
-                            categoryName = product.Category?.CategoryName
-                        }
+                        data = new { existing.Id, store.StoreName, product.ProductName, product.Category?.CategoryName }
                     });
                 }
             }
-
-            // Get active status
-            var activeStatus = await _context.MasterTables
-                .FirstOrDefaultAsync(m => m.TableName == "Status" && m.TableValue == "Active");
-
-            if (activeStatus == null)
-                return StatusCode(500, new { message = "Active status not configured." });
 
             var assignment = new StoreProductAssignment
             {
@@ -208,20 +193,13 @@ public class StoreProductAssignmentController : ControllerBase
             _context.StoreProductAssignments.Add(assignment);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Assignment created successfully: Store {StoreName} - Product {ProductName} (Category: {CategoryName})",
-                store.StoreName, product.ProductName, product.Category?.CategoryName ?? "Unknown");
+            _logger.LogInformation("Assignment created: Store {StoreName} - Product {ProductName}", store.StoreName, product.ProductName);
 
             return Ok(new
             {
                 success = true,
                 message = "Product assigned to store successfully.",
-                data = new
-                {
-                    assignment.Id,
-                    storeName = store.StoreName,
-                    productName = product.ProductName,
-                    categoryName = product.Category?.CategoryName
-                }
+                data = new { assignment.Id, store.StoreName, product.ProductName, product.Category?.CategoryName }
             });
         }
         catch (Exception ex)
@@ -232,7 +210,7 @@ public class StoreProductAssignmentController : ControllerBase
     }
 
     // ===============================
-    // BULK CREATE ASSIGNMENTS
+    // BULK CREATE / REACTIVATE ASSIGNMENTS
     // ===============================
     [HttpPost("bulk")]
     public async Task<IActionResult> BulkCreateAssignments([FromBody] BulkAssignmentDto dto)
@@ -240,21 +218,17 @@ public class StoreProductAssignmentController : ControllerBase
         var currentUser = await _context.Users.FindAsync(GetUserIdFromToken());
         var currentUserName = currentUser?.FullName ?? "System";
 
-        _logger.LogInformation("BulkCreateAssignments called by: {UserName} for Store: {StoreId}",
-            currentUserName, dto.StoreId);
+        _logger.LogInformation("BulkCreateAssignments called by: {UserName} for Store: {StoreId}", currentUserName, dto.StoreId);
 
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
         {
-            // Validate store
             var store = await _context.Stores
                 .FirstOrDefaultAsync(s => s.Id == dto.StoreId && s.Active == true);
-
             if (store == null)
                 return BadRequest(new { message = "Invalid or inactive store." });
 
-            // Validate all products
             var products = await _context.Products
                 .Include(p => p.Category)
                 .Where(p => dto.ProductIds.Contains(p.Id) && p.Active == true)
@@ -262,30 +236,20 @@ public class StoreProductAssignmentController : ControllerBase
 
             if (products.Count != dto.ProductIds.Count)
             {
-                var invalidIds = dto.ProductIds.Except(products.Select(p => p.Id)).ToList();
-                return BadRequest(new
-                {
-                    message = "Some products are invalid or inactive.",
-                    invalidProductIds = invalidIds
-                });
+                var invalid = dto.ProductIds.Except(products.Select(p => p.Id)).ToList();
+                return BadRequest(new { message = "Some products are invalid or inactive.", invalidProductIds = invalid });
             }
 
-            // Get active status
             var activeStatus = await _context.MasterTables
-                .FirstOrDefaultAsync(m => m.TableName == "Status" && m.TableValue == "Active");
+                .FirstOrDefaultAsync(m => m.TableName == "Status" && m.TableValue == "Active")
+                ?? throw new Exception("Active status not configured.");
 
-            if (activeStatus == null)
-                return StatusCode(500, new { message = "Active status not configured." });
-
-            // Fetch ALL existing assignments for these products (Active AND Inactive)
             var existingAssignments = await _context.StoreProductAssignments
-                .Where(sp => sp.StoreId == dto.StoreId &&
-                             dto.ProductIds.Contains(sp.ProductId))
+                .Where(sp => sp.StoreId == dto.StoreId && dto.ProductIds.Contains(sp.ProductId))
                 .ToListAsync();
 
-            var assignmentsToAdd = new List<StoreProductAssignment>();
-            var reactivatedCount = 0;
-            var skippedCount = 0;
+            var toAdd = new List<StoreProductAssignment>();
+            int reactivated = 0, skipped = 0;
 
             foreach (var productId in dto.ProductIds)
             {
@@ -295,23 +259,22 @@ public class StoreProductAssignmentController : ControllerBase
                 {
                     if (existing.Active == true)
                     {
-                        skippedCount++;
-                        continue; // Already assigned and active
+                        skipped++;
+                        continue;
                     }
                     else
                     {
-                        // Reactivate
                         existing.Active = true;
+                        existing.CanManage = dto.CanManage;
+                        existing.StatusId = activeStatus.Id;
                         existing.ModifiedBy = currentUserName;
                         existing.ModifiedDate = GetIndianTime();
-                        existing.CanManage = dto.CanManage; // Update permission
-                        reactivatedCount++;
+                        reactivated++;
                     }
                 }
                 else
                 {
-                    // Create New
-                    assignmentsToAdd.Add(new StoreProductAssignment
+                    toAdd.Add(new StoreProductAssignment
                     {
                         Id = Guid.NewGuid().ToString(),
                         StoreId = dto.StoreId,
@@ -327,28 +290,23 @@ public class StoreProductAssignmentController : ControllerBase
                 }
             }
 
-            if (assignmentsToAdd.Count > 0)
-            {
-                _context.StoreProductAssignments.AddRange(assignmentsToAdd);
-            }
+            if (toAdd.Any())
+                _context.StoreProductAssignments.AddRange(toAdd);
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            var totalAffected = assignmentsToAdd.Count + reactivatedCount;
-            var productNames = products.Where(p => dto.ProductIds.Contains(p.Id))
-                                       .Select(p => $"{p.ProductName} ({p.Category?.CategoryName})")
-                                       .ToList();
+            var productNames = products.Select(p => $"{p.ProductName} ({p.Category?.CategoryName})").ToList();
 
             _logger.LogInformation("Bulk assignments processed: {Added} new, {Reactivated} reactivated, {Skipped} skipped for Store: {StoreName}",
-                assignmentsToAdd.Count, reactivatedCount, skippedCount, store.StoreName);
+                toAdd.Count, reactivated, skipped, store.StoreName);
 
             return Ok(new
             {
                 success = true,
-                message = $"{totalAffected} products assigned successfully ({reactivatedCount} reactivated).",
-                assignedCount = totalAffected,
-                skippedCount = skippedCount,
+                message = $"{toAdd.Count + reactivated} products assigned successfully ({reactivated} reactivated).",
+                assignedCount = toAdd.Count + reactivated,
+                skippedCount = skipped,
                 assignedProducts = productNames
             });
         }
@@ -361,7 +319,7 @@ public class StoreProductAssignmentController : ControllerBase
     }
 
     // ===============================
-    // ASSIGN PRODUCTS BY CATEGORY (Safe Upsert)
+    // ASSIGN PRODUCTS BY CATEGORY (with reactivation)
     // ===============================
     [HttpPost("by-category")]
     public async Task<IActionResult> AssignProductsByCategory([FromBody] CategoryProductAssignmentDto dto)
@@ -376,29 +334,21 @@ public class StoreProductAssignmentController : ControllerBase
 
         try
         {
-            // Validate store
             var store = await _context.Stores
                 .FirstOrDefaultAsync(s => s.Id == dto.StoreId && s.Active == true);
-
             if (store == null)
                 return BadRequest(new { message = "Invalid or inactive store." });
 
-            // Validate category
             var category = await _context.ProductCategories
                 .FirstOrDefaultAsync(c => c.Id == dto.CategoryId && c.Active == true);
-
             if (category == null)
                 return BadRequest(new { message = "Invalid or inactive category." });
 
-            // Fetch StatusId for Active
             var activeStatus = await _context.MasterTables
-                .FirstOrDefaultAsync(m => m.TableName == "Status" && m.TableValue == "Active");
-                
-            if (activeStatus == null)
-                return StatusCode(500, new { message = "Active status not configured." });
+                .FirstOrDefaultAsync(m => m.TableName == "Status" && m.TableValue == "Active")
+                ?? throw new Exception("Active status not configured.");
 
-            int assignedCount = 0;
-            int reactivatedCount = 0;
+            int assigned = 0, reactivated = 0;
 
             foreach (var productId in dto.ProductIds)
             {
@@ -409,34 +359,30 @@ public class StoreProductAssignmentController : ControllerBase
                 {
                     if (existing.Active == false)
                     {
-                        // Reactivate
                         existing.Active = true;
-                        existing.ModifiedDate = GetIndianTime();
-                        existing.ModifiedBy = currentUserName;
-                        existing.StatusId = activeStatus.Id;
                         existing.CanManage = dto.CanManage;
-                        reactivatedCount++;
+                        existing.StatusId = activeStatus.Id;
+                        existing.ModifiedBy = currentUserName;
+                        existing.ModifiedDate = GetIndianTime();
+                        reactivated++;
                     }
-                    // If active, do nothing (already assigned)
                 }
                 else
                 {
-                    // Create New
-                    var assignment = new StoreProductAssignment
+                    _context.StoreProductAssignments.Add(new StoreProductAssignment
                     {
                         Id = Guid.NewGuid().ToString(),
                         StoreId = dto.StoreId,
                         ProductId = productId,
-                        Active = true,
-                        StatusId = activeStatus.Id,
                         CanManage = dto.CanManage,
-                        CreatedDate = GetIndianTime(),
+                        StatusId = activeStatus.Id,
                         CreatedBy = currentUserName,
+                        CreatedDate = GetIndianTime(),
+                        ModifiedBy = currentUserName,
                         ModifiedDate = GetIndianTime(),
-                        ModifiedBy = currentUserName
-                    };
-                    _context.StoreProductAssignments.Add(assignment);
-                    assignedCount++;
+                        Active = true
+                    });
+                    assigned++;
                 }
             }
 
@@ -446,9 +392,9 @@ public class StoreProductAssignmentController : ControllerBase
             return Ok(new
             {
                 success = true,
-                message = $"Processed successfully. Assigned: {assignedCount}, Reactivated: {reactivatedCount}",
-                assignedCount,
-                reactivatedCount
+                message = $"Processed successfully. Assigned: {assigned}, Reactivated: {reactivated}",
+                assignedCount = assigned,
+                reactivatedCount = reactivated
             });
         }
         catch (Exception ex)
@@ -456,6 +402,57 @@ public class StoreProductAssignmentController : ControllerBase
             await transaction.RollbackAsync();
             _logger.LogError(ex, "AssignProductsByCategory failed");
             return StatusCode(500, new { message = "Failed to assign products.", error = ex.Message });
+        }
+    }
+
+    // ===============================
+    // UNASSIGN (Soft Delete) - SuperAdmin & StoreAdmin with CanManage
+    // ===============================
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> UnassignProduct(string id)
+    {
+        var currentUser = await _context.Users.FindAsync(GetUserIdFromToken());
+        var currentUserName = currentUser?.FullName ?? "System";
+
+        _logger.LogInformation("UnassignProduct called by: {UserName}, AssignmentId: {AssignmentId}", currentUserName, id);
+
+        try
+        {
+            var assignment = await _context.StoreProductAssignments
+                .Include(sp => sp.Store)
+                .Include(sp => sp.Product)
+                .FirstOrDefaultAsync(sp => sp.Id == id && sp.Active == true);
+
+            if (assignment == null)
+                return NotFound(new { message = "Assignment not found." });
+
+            // Check permission if StoreAdmin
+            if (User.IsInRole("StoreAdmin"))
+            {
+                var storeId = User.FindFirst("StoreId")?.Value;
+                if (assignment.StoreId != storeId || assignment.CanManage != true)
+                {
+                    _logger.LogWarning("StoreAdmin {UserId} attempted unauthorized unassign of Assignment {AssignmentId}", currentUser?.Id, id);
+                    return Forbid();
+                }
+            }
+
+            // Soft delete
+            assignment.Active = false;
+            assignment.ModifiedDate = GetIndianTime();
+            assignment.ModifiedBy = currentUserName;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Assignment unassigned: Store {StoreName} - Product {ProductName}",
+                assignment.Store.StoreName, assignment.Product.ProductName);
+
+            return Ok(new { success = true, message = "Product unassigned from store successfully." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "UnassignProduct failed for AssignmentId: {AssignmentId}", id);
+            return StatusCode(500, new { message = "Failed to unassign product.", error = ex.Message });
         }
     }
 
@@ -472,19 +469,23 @@ public class StoreProductAssignmentController : ControllerBase
             if (string.IsNullOrEmpty(storeId))
                 return BadRequest(new { message = "Store ID not found in token." });
 
-            var products = await _context.StoreProductAssignments
+            var assignments = await _context.StoreProductAssignments
                 .Where(x => x.StoreId == storeId && x.Active == true)
                 .Include(x => x.Product)
-                .ThenInclude(p => p.Category)
+                    .ThenInclude(p => p.Category)
                 .Select(x => new
                 {
                     x.Product.Id,
                     x.Product.ProductName,
-                    Category = x.Product.Category.CategoryName ?? "Uncategorized"
+                    x.Product.ProductCode,
+                    Category = x.Product.Category.CategoryName ?? "Uncategorized",
+                    x.CanManage,
+                    ProductImage = x.Product.ProductImage,
+                    ProductImageUrl = !string.IsNullOrEmpty(x.Product.ProductImage) ? GetFullUrl(x.Product.ProductImage) : null
                 })
                 .ToListAsync();
 
-            return Ok(products);
+            return Ok(assignments);
         }
         catch (Exception ex)
         {
@@ -494,13 +495,12 @@ public class StoreProductAssignmentController : ControllerBase
     }
 
     // ===============================
-    // GET ALL ASSIGNMENTS
+    // GET ALL ASSIGNMENTS (SuperAdmin only)
     // ===============================
     [HttpGet]
     public async Task<IActionResult> GetAllAssignments([FromQuery] string? storeId, [FromQuery] string? productId)
     {
-        _logger.LogInformation("GetAllAssignments called by: {UserName}",
-            User.FindFirstValue("FullName") ?? "Unknown");
+        _logger.LogInformation("GetAllAssignments called by: {UserName}", User.FindFirstValue("FullName") ?? "Unknown");
 
         try
         {
@@ -534,7 +534,6 @@ public class StoreProductAssignmentController : ControllerBase
                 })
                 .ToListAsync();
 
-            // Build response
             var response = assignments.Select(a => new AssignmentListResponseDto
             {
                 Id = a.Id,
@@ -549,12 +548,7 @@ public class StoreProductAssignmentController : ControllerBase
                 CreatedDate = a.CreatedDate
             }).ToList();
 
-            return Ok(new
-            {
-                success = true,
-                data = response,
-                count = response.Count
-            });
+            return Ok(new { success = true, data = response, count = response.Count });
         }
         catch (Exception ex)
         {
@@ -564,19 +558,17 @@ public class StoreProductAssignmentController : ControllerBase
     }
 
     // ===============================
-    // GET PRODUCTS BY CATEGORY FOR ASSIGNMENT
+    // GET PRODUCTS BY CATEGORY FOR ASSIGNMENT (SuperAdmin)
     // ===============================
     [HttpGet("products-by-category/{categoryId}")]
     public async Task<IActionResult> GetProductsByCategory(string categoryId, [FromQuery] string? storeId)
     {
-        _logger.LogInformation("GetProductsByCategory called for CategoryId: {CategoryId}, StoreId: {StoreId}",
-            categoryId, storeId ?? "all");
+        _logger.LogInformation("GetProductsByCategory called for CategoryId: {CategoryId}, StoreId: {StoreId}", categoryId, storeId ?? "all");
 
         try
         {
             var category = await _context.ProductCategories
                 .FirstOrDefaultAsync(c => c.Id == categoryId && c.Active == true);
-
             if (category == null)
                 return BadRequest(new { message = "Invalid or inactive category." });
 
@@ -644,20 +636,16 @@ public class StoreProductAssignmentController : ControllerBase
 
         try
         {
-            // Validate store exists
             var store = await _context.Stores
                 .FirstOrDefaultAsync(s => s.Id == storeId && s.Active == true);
-
             if (store == null)
                 return BadRequest(new { message = "Invalid or inactive store." });
 
-            // Get already assigned product IDs
             var assignedProductIds = await _context.StoreProductAssignments
                 .Where(sp => sp.StoreId == storeId && sp.Active == true)
                 .Select(sp => sp.ProductId)
                 .ToListAsync();
 
-            // Get available products
             var productsQuery = _context.Products
                 .Include(p => p.Category)
                 .Where(p => p.Active == true && p.Status.TableValue == "Active")
@@ -682,8 +670,7 @@ public class StoreProductAssignmentController : ControllerBase
                 })
                 .ToListAsync();
 
-            // Group by category for easier frontend consumption
-            var groupedByCategory = products
+            var grouped = products
                 .GroupBy(p => new { p.CategoryId, p.CategoryName })
                 .Select(g => new
                 {
@@ -696,7 +683,7 @@ public class StoreProductAssignmentController : ControllerBase
             return Ok(new
             {
                 success = true,
-                data = groupedByCategory,
+                data = grouped,
                 assignedCount = assignedProductIds.Count,
                 totalAvailable = products.Count
             });
@@ -759,7 +746,7 @@ public class StoreProductAssignmentController : ControllerBase
     }
 
     // ===============================
-    // GET ASSIGNMENTS BY STORE
+    // GET ASSIGNMENTS BY STORE (SuperAdmin) – for quick overview
     // ===============================
     [HttpGet("store/{storeId}")]
     public async Task<IActionResult> GetAssignmentsByStore(string storeId)
@@ -788,7 +775,6 @@ public class StoreProductAssignmentController : ControllerBase
                 })
                 .ToListAsync();
 
-            // Build response with image URLs
             var response = assignments.Select(a => new
             {
                 a.Id,
@@ -803,13 +789,7 @@ public class StoreProductAssignmentController : ControllerBase
                 StatusColor = GetStatusColor(a.Status)
             }).ToList();
 
-            return Ok(new
-            {
-                success = true,
-                storeId,
-                data = response,
-                count = response.Count
-            });
+            return Ok(new { success = true, storeId, data = response, count = response.Count });
         }
         catch (Exception ex)
         {
@@ -819,70 +799,7 @@ public class StoreProductAssignmentController : ControllerBase
     }
 
     // ===============================
-    // GET ASSIGNMENTS BY PRODUCT
-    // ===============================
-    [HttpGet("product/{productId}")]
-    public async Task<IActionResult> GetAssignmentsByProduct(string productId)
-    {
-        _logger.LogInformation("GetAssignmentsByProduct called for ProductId: {ProductId}", productId);
-
-        try
-        {
-            var assignments = await _context.StoreProductAssignments
-                .Include(sp => sp.Store)
-                .Include(sp => sp.Status)
-                .Where(sp => sp.ProductId == productId && sp.Active == true)
-                .OrderByDescending(sp => sp.CreatedDate)
-                .Select(sp => new
-                {
-                    sp.Id,
-                    sp.StoreId,
-                    sp.Store.StoreName,
-                    sp.Store.StoreCode,
-                    sp.Store.Address,
-                    sp.Store.ContactNumber,
-                    sp.Store.Email,
-                    sp.Store.StoreLogo,
-                    sp.CanManage,
-                    Status = sp.Status.TableValue,
-                    StatusId = sp.StatusId
-                })
-                .ToListAsync();
-
-            // Build response with image URLs
-            var response = assignments.Select(a => new
-            {
-                a.Id,
-                a.StoreId,
-                a.StoreName,
-                a.StoreCode,
-                a.Address,
-                a.ContactNumber,
-                a.Email,
-                StoreLogoUrl = !string.IsNullOrEmpty(a.StoreLogo) ? GetFullUrl(a.StoreLogo) : null,
-                a.CanManage,
-                a.Status,
-                a.StatusId,
-                StatusColor = GetStatusColor(a.Status)
-            }).ToList();
-
-            return Ok(new
-            {
-                success = true,
-                productId,
-                data = response,
-                count = response.Count
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "GetAssignmentsByProduct failed for ProductId: {ProductId}", productId);
-            return StatusCode(500, new { message = "Failed to retrieve assignments.", error = ex.Message });
-        }
-    }
-
-    // ===============================
-    // UPDATE ASSIGNMENT
+    // UPDATE ASSIGNMENT (SuperAdmin only – can change CanManage or Status)
     // ===============================
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateAssignment(string id, [FromBody] AssignmentUpdateDto dto)
@@ -890,8 +807,7 @@ public class StoreProductAssignmentController : ControllerBase
         var currentUser = await _context.Users.FindAsync(GetUserIdFromToken());
         var currentUserName = currentUser?.FullName ?? "System";
 
-        _logger.LogInformation("UpdateAssignment called by: {UserName}, AssignmentId: {AssignmentId}",
-            currentUserName, id);
+        _logger.LogInformation("UpdateAssignment called by: {UserName}, AssignmentId: {AssignmentId}", currentUserName, id);
 
         try
         {
@@ -913,7 +829,6 @@ public class StoreProductAssignmentController : ControllerBase
             {
                 var statusExists = await _context.MasterTables
                     .AnyAsync(m => m.Id == dto.StatusId.Value && m.TableName == "Status" && m.Active == true);
-
                 if (!statusExists)
                     return BadRequest(new { message = "Invalid status selected." });
 
@@ -927,8 +842,7 @@ public class StoreProductAssignmentController : ControllerBase
                 assignment.ModifiedBy = currentUserName;
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Assignment updated successfully: {AssignmentId} by {UserName}",
-                    id, currentUserName);
+                _logger.LogInformation("Assignment updated successfully: {AssignmentId} by {UserName}", id, currentUserName);
             }
 
             return await GetAssignmentById(id);
@@ -941,50 +855,7 @@ public class StoreProductAssignmentController : ControllerBase
     }
 
     // ===============================
-    // DELETE ASSIGNMENT (Soft Delete)
-    // ===============================
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteAssignment(string id)
-    {
-        var currentUser = await _context.Users.FindAsync(GetUserIdFromToken());
-        var currentUserName = currentUser?.FullName ?? "System";
-
-        _logger.LogInformation("DeleteAssignment called by: {UserName}, AssignmentId: {AssignmentId}",
-            currentUserName, id);
-
-        try
-        {
-            var assignment = await _context.StoreProductAssignments
-                .FirstOrDefaultAsync(sp => sp.Id == id && sp.Active == true);
-
-            if (assignment == null)
-                return NotFound(new { message = "Assignment not found." });
-
-            // Soft delete
-            assignment.Active = false;
-            assignment.ModifiedDate = GetIndianTime();
-            assignment.ModifiedBy = currentUserName;
-
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("Assignment deleted successfully: {AssignmentId} by {UserName}",
-                id, currentUserName);
-
-            return Ok(new
-            {
-                success = true,
-                message = "Assignment deleted successfully."
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "DeleteAssignment failed for AssignmentId: {AssignmentId}", id);
-            return StatusCode(500, new { message = "Failed to delete assignment.", error = ex.Message });
-        }
-    }
-
-    // ===============================
-    // DELETE ASSIGNMENTS BY STORE
+    // DELETE ASSIGNMENTS BY STORE (Soft Delete)
     // ===============================
     [HttpDelete("store/{storeId}")]
     public async Task<IActionResult> DeleteAssignmentsByStore(string storeId)
@@ -992,8 +863,7 @@ public class StoreProductAssignmentController : ControllerBase
         var currentUser = await _context.Users.FindAsync(GetUserIdFromToken());
         var currentUserName = currentUser?.FullName ?? "System";
 
-        _logger.LogInformation("DeleteAssignmentsByStore called by: {UserName}, StoreId: {StoreId}",
-            currentUserName, storeId);
+        _logger.LogInformation("DeleteAssignmentsByStore called by: {UserName}, StoreId: {StoreId}", currentUserName, storeId);
 
         try
         {
@@ -1004,23 +874,18 @@ public class StoreProductAssignmentController : ControllerBase
             if (!assignments.Any())
                 return NotFound(new { message = "No active assignments found for this store." });
 
-            foreach (var assignment in assignments)
+            foreach (var a in assignments)
             {
-                assignment.Active = false;
-                assignment.ModifiedDate = GetIndianTime();
-                assignment.ModifiedBy = currentUserName;
+                a.Active = false;
+                a.ModifiedDate = GetIndianTime();
+                a.ModifiedBy = currentUserName;
             }
 
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("All assignments deleted for Store: {StoreId} by {UserName}",
-                storeId, currentUserName);
+            _logger.LogInformation("All assignments deleted for Store: {StoreId} by {UserName}", storeId, currentUserName);
 
-            return Ok(new
-            {
-                success = true,
-                message = $"All {assignments.Count} assignments deleted successfully."
-            });
+            return Ok(new { success = true, message = $"All {assignments.Count} assignments deleted successfully." });
         }
         catch (Exception ex)
         {
@@ -1030,13 +895,12 @@ public class StoreProductAssignmentController : ControllerBase
     }
 
     // ===============================
-    // GET ASSIGNMENT STATISTICS
+    // GET ASSIGNMENT STATISTICS (SuperAdmin only)
     // ===============================
     [HttpGet("statistics")]
     public async Task<IActionResult> GetAssignmentStatistics()
     {
-        _logger.LogInformation("GetAssignmentStatistics called by: {UserName}",
-            User.FindFirstValue("FullName") ?? "Unknown");
+        _logger.LogInformation("GetAssignmentStatistics called by: {UserName}", User.FindFirstValue("FullName") ?? "Unknown");
 
         try
         {

@@ -35,7 +35,7 @@ public class AuthController : ControllerBase
     }
 
     // ===============================
-    // DTOs
+    // DTOs (unchanged)
     // ===============================
     public class RegisterRequestDto
     {
@@ -133,9 +133,9 @@ public class AuthController : ControllerBase
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 RoleId = roleId,
                 StatusId = statusId,
-                CreatedBy = "System", // Store full name
+                CreatedBy = "System",
                 CreatedDate = GetIndianTime(),
-                ModifiedBy = fullName, // Store full name of user
+                ModifiedBy = fullName,
                 ModifiedDate = GetIndianTime(),
                 Active = true
             };
@@ -160,6 +160,7 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Login(LoginRequestDto dto)
     {
+        // ... (unchanged, already returns profilePictureUrl)
         _logger.LogInformation("Login attempt for email: {Email}", dto.Email);
 
         try
@@ -220,6 +221,7 @@ public class AuthController : ControllerBase
     [HttpGet("whoami")]
     public async Task<IActionResult> WhoAmI()
     {
+        // ... (unchanged, already returns profilePicture)
         try
         {
             var userId = GetUserIdFromToken();
@@ -260,6 +262,7 @@ public class AuthController : ControllerBase
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
+        // ... (unchanged)
         var userId = GetUserIdFromToken();
         _logger.LogInformation("Logout attempt for UserId: {UserId}", userId);
 
@@ -292,6 +295,7 @@ public class AuthController : ControllerBase
     [HttpGet("profile")]
     public async Task<IActionResult> GetProfile()
     {
+        // ... (unchanged, already returns profilePictureUrl)
         var userId = GetUserIdFromToken();
         _logger.LogInformation("GetProfile called for UserId: {UserId}", userId);
 
@@ -349,6 +353,7 @@ public class AuthController : ControllerBase
     [HttpPut("profile")]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
     {
+        // ... (unchanged)
         var userId = GetUserIdFromToken();
         _logger.LogInformation("UpdateProfile called for UserId: {UserId}", userId);
 
@@ -363,7 +368,6 @@ public class AuthController : ControllerBase
 
             bool hasChanges = false;
 
-            // Only update fields that are provided
             if (!string.IsNullOrWhiteSpace(dto.FullName))
             {
                 user.FullName = dto.FullName.Trim();
@@ -372,7 +376,6 @@ public class AuthController : ControllerBase
 
             if (!string.IsNullOrWhiteSpace(dto.Phone))
             {
-                // Validate phone number format
                 if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Phone, @"^[0-9]{10}$"))
                     return BadRequest(new { message = "Phone must be 10 digits." });
 
@@ -383,7 +386,7 @@ public class AuthController : ControllerBase
             if (hasChanges)
             {
                 user.ModifiedDate = GetIndianTime();
-                user.ModifiedBy = user.FullName; // Store full name
+                user.ModifiedBy = user.FullName;
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Profile updated successfully for UserId: {UserId}", userId);
             }
@@ -403,12 +406,13 @@ public class AuthController : ControllerBase
     }
 
     // ===============================
-    // 7. UPLOAD PROFILE PICTURE (Separate Endpoint)
+    // 7. UPLOAD PROFILE PICTURE
     // ===============================
     [HttpPost("profile-picture")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UploadProfilePicture([FromForm] UploadProfilePictureDto dto)
     {
+        // ... (unchanged)
         var userId = GetUserIdFromToken();
         _logger.LogInformation("UploadProfilePicture called for UserId: {UserId}", userId);
 
@@ -424,14 +428,12 @@ public class AuthController : ControllerBase
             if (dto.ProfileImage == null || dto.ProfileImage.Length == 0)
                 return BadRequest(new { message = "No image file provided." });
 
-            // Delete old image if exists
             _fileService.DeleteProfileImage(user.ProfilePicture);
 
-            // Save new image
             var imagePath = await _fileService.SaveProfileImageAsync(dto.ProfileImage, user.Id);
             user.ProfilePicture = imagePath;
             user.ModifiedDate = GetIndianTime();
-            user.ModifiedBy = user.FullName; // Store full name
+            user.ModifiedBy = user.FullName;
             await _context.SaveChangesAsync();
 
             var profilePictureUrl = _fileService.GetProfileImageUrl(user.ProfilePicture);
@@ -444,14 +446,6 @@ public class AuthController : ControllerBase
                 profilePicture = user.ProfilePicture,
                 profilePictureUrl = profilePictureUrl
             });
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
@@ -467,6 +461,7 @@ public class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetProfilePicture(string userId)
     {
+        // ... (unchanged)
         try
         {
             var user = await _context.Users.FindAsync(userId);
@@ -497,6 +492,7 @@ public class AuthController : ControllerBase
     [HttpDelete("profile-picture")]
     public async Task<IActionResult> DeleteProfilePicture()
     {
+        // ... (unchanged)
         var userId = GetUserIdFromToken();
         _logger.LogInformation("DeleteProfilePicture called for UserId: {UserId}", userId);
 
@@ -511,7 +507,7 @@ public class AuthController : ControllerBase
                 _fileService.DeleteProfileImage(user.ProfilePicture);
                 user.ProfilePicture = null;
                 user.ModifiedDate = GetIndianTime();
-                user.ModifiedBy = user.FullName; // Store full name
+                user.ModifiedBy = user.FullName;
 
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Profile picture deleted for UserId: {UserId}", userId);
@@ -527,11 +523,12 @@ public class AuthController : ControllerBase
     }
 
     // ===============================
-    // 10. CHANGE PASSWORD (Authenticated - Own account)
+    // 10. CHANGE PASSWORD (Own account)
     // ===============================
     [HttpPut("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
     {
+        // ... (unchanged)
         var userId = GetUserIdFromToken();
         _logger.LogInformation("ChangePassword called for UserId: {UserId}", userId);
 
@@ -555,7 +552,7 @@ public class AuthController : ControllerBase
 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
             user.ModifiedDate = GetIndianTime();
-            user.ModifiedBy = user.FullName; // Store full name
+            user.ModifiedBy = user.FullName;
 
             await _context.SaveChangesAsync();
 
@@ -576,6 +573,7 @@ public class AuthController : ControllerBase
     [Authorize(Roles = "SuperAdmin")]
     public async Task<IActionResult> CreateStoreAdmin([FromBody] RegisterRequestDto dto)
     {
+        // ... (unchanged, already creates StoreAdmin and store)
         var currentUser = await _context.Users.FindAsync(GetUserIdFromToken());
         var currentUserName = currentUser?.FullName ?? "System";
 
@@ -596,7 +594,6 @@ public class AuthController : ControllerBase
             var roleId = await GetMasterId("Role", "StoreAdmin");
             var statusId = await GetMasterId("Status", "Active");
 
-            // Create store
             var storeId = Guid.NewGuid().ToString();
             var storeCode = "ST-" + Guid.NewGuid().ToString()[..5].ToUpper();
             var storeName = $"{dto.FullName.Trim()}'s Store";
@@ -616,7 +613,6 @@ public class AuthController : ControllerBase
             _context.Stores.Add(store);
             await _context.SaveChangesAsync();
 
-            // Create store admin user
             var userId = Guid.NewGuid().ToString();
             var userCode = "SADM-" + Guid.NewGuid().ToString()[..8].ToUpper();
             var fullName = dto.FullName.Trim();
@@ -661,9 +657,6 @@ public class AuthController : ControllerBase
     }
 
     // ===============================
-    // 12. GET ALL USERS (SuperAdmin only)
-    // ===============================
-    // ===============================
     // 12. GET ALL USERS (SuperAdmin + StoreAdmin)
     // ===============================
     [HttpGet("users")]
@@ -681,12 +674,20 @@ public class AuthController : ControllerBase
                 .Include(u => u.Store)
                 .AsQueryable();
 
+            // Role-based filtering
             if (User.IsInRole("StoreAdmin"))
             {
                 var storeId = User.FindFirst("StoreId")?.Value;
-                // StoreAdmin sees only Customers of their store
-                query = query.Where(u => u.StoreId == storeId && u.Role.TableValue == "Customer");
+                if (string.IsNullOrEmpty(storeId))
+                {
+                    _logger.LogWarning("StoreAdmin missing StoreId claim: {UserId}", currentUserId);
+                    return Forbid();
+                }
+
+                // StoreAdmin sees only customers of their own store
+                query = query.Where(u => u.StoreId == storeId && u.Role != null && u.Role.TableValue == "Customer");
             }
+            // SuperAdmin sees all users (no extra filter)
 
             var users = await query
                 .Select(u => new
@@ -724,10 +725,10 @@ public class AuthController : ControllerBase
     }
 
     // ===============================
-    // 13. GET USER BY ID (SuperAdmin only)
+    // 13. GET USER BY ID (SuperAdmin + StoreAdmin)
     // ===============================
     [HttpGet("users/{id}")]
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize(Roles = "SuperAdmin,StoreAdmin")]
     public async Task<IActionResult> GetUserById(string id)
     {
         var currentUserId = GetUserIdFromToken();
@@ -739,29 +740,7 @@ public class AuthController : ControllerBase
                 .Include(u => u.Role)
                 .Include(u => u.Status)
                 .Include(u => u.Store)
-                .Where(u => u.Id == id)
-                .Select(u => new
-                {
-                    u.Id,
-                    u.UserCode,
-                    u.FullName,
-                    u.Email,
-                    u.Phone,
-                    Role = u.Role != null ? u.Role.TableValue : "Unknown",
-                    StoreName = u.Store != null ? u.Store.StoreName : null,
-                    u.StoreId,
-                    Status = u.Status != null ? u.Status.TableValue : "Unknown",
-                    u.Active,
-                    u.CreatedBy,
-                    u.CreatedDate,
-                    u.ModifiedBy,
-                    u.ModifiedDate,
-                    u.LastLogin,
-                    ProfilePicture = !string.IsNullOrEmpty(u.ProfilePicture)
-                        ? _fileService.GetProfileImageUrl(u.ProfilePicture)
-                        : null
-                })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)
             {
@@ -769,7 +748,40 @@ public class AuthController : ControllerBase
                 return NotFound(new { message = "User not found." });
             }
 
-            return Ok(user);
+            // Role-based authorization
+            if (User.IsInRole("StoreAdmin"))
+            {
+                var storeId = User.FindFirst("StoreId")?.Value;
+                if (user.StoreId != storeId || user.Role?.TableValue != "Customer")
+                {
+                    _logger.LogWarning("StoreAdmin {UserId} attempted to access user outside their store: {TargetId}", currentUserId, id);
+                    return Forbid();
+                }
+            }
+
+            var response = new
+            {
+                user.Id,
+                user.UserCode,
+                user.FullName,
+                user.Email,
+                user.Phone,
+                Role = user.Role?.TableValue,
+                StoreName = user.Store?.StoreName,
+                user.StoreId,
+                Status = user.Status?.TableValue,
+                user.Active,
+                user.CreatedBy,
+                user.CreatedDate,
+                user.ModifiedBy,
+                user.ModifiedDate,
+                user.LastLogin,
+                ProfilePicture = !string.IsNullOrEmpty(user.ProfilePicture)
+                    ? _fileService.GetProfileImageUrl(user.ProfilePicture)
+                    : null
+            };
+
+            return Ok(response);
         }
         catch (Exception ex)
         {
@@ -779,24 +791,39 @@ public class AuthController : ControllerBase
     }
 
     // ===============================
-    // 14. UPDATE USER (SuperAdmin only)
+    // 14. UPDATE USER (SuperAdmin + StoreAdmin)
     // ===============================
     [HttpPut("users/{id}")]
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize(Roles = "SuperAdmin,StoreAdmin")]
     public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateProfileDto dto)
     {
         var currentUser = await _context.Users.FindAsync(GetUserIdFromToken());
         var currentUserName = currentUser?.FullName ?? "System";
+        var currentUserId = currentUser?.Id;
 
         _logger.LogInformation("UpdateUser called by: {UserName}, TargetUserId: {TargetId}", currentUserName, id);
 
         try
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
             if (user == null)
             {
                 _logger.LogWarning("UpdateUser failed - User not found: {TargetId}", id);
                 return NotFound(new { message = "User not found." });
+            }
+
+            // Role-based authorization
+            if (User.IsInRole("StoreAdmin"))
+            {
+                var storeId = User.FindFirst("StoreId")?.Value;
+                if (user.StoreId != storeId || user.Role?.TableValue != "Customer")
+                {
+                    _logger.LogWarning("StoreAdmin {UserId} attempted to update user outside their store: {TargetId}", currentUserId, id);
+                    return Forbid();
+                }
             }
 
             bool hasChanges = false;
@@ -809,6 +836,9 @@ public class AuthController : ControllerBase
 
             if (!string.IsNullOrWhiteSpace(dto.Phone))
             {
+                if (!System.Text.RegularExpressions.Regex.IsMatch(dto.Phone, @"^[0-9]{10}$"))
+                    return BadRequest(new { message = "Phone must be 10 digits." });
+
                 user.Phone = dto.Phone.Trim();
                 hasChanges = true;
             }
@@ -831,10 +861,10 @@ public class AuthController : ControllerBase
     }
 
     // ===============================
-    // 15. TOGGLE USER STATUS (SuperAdmin only)
+    // 15. TOGGLE USER STATUS (SuperAdmin + StoreAdmin)
     // ===============================
     [HttpPatch("users/{id}/toggle-status")]
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize(Roles = "SuperAdmin,StoreAdmin")]
     public async Task<IActionResult> ToggleUserStatus(string id, [FromBody] bool active)
     {
         var currentUser = await _context.Users.FindAsync(GetUserIdFromToken());
@@ -846,17 +876,31 @@ public class AuthController : ControllerBase
 
         try
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
             if (user == null)
             {
                 _logger.LogWarning("ToggleUserStatus failed - User not found: {TargetId}", id);
                 return NotFound(new { message = "User not found." });
             }
 
-            // Prevent SuperAdmin from deactivating themselves
-            if (id == currentUserId && !active)
+            // Role-based authorization
+            if (User.IsInRole("StoreAdmin"))
             {
-                _logger.LogWarning("ToggleUserStatus failed - SuperAdmin attempted to deactivate own account: {UserId}", currentUserId);
+                var storeId = User.FindFirst("StoreId")?.Value;
+                if (user.StoreId != storeId || user.Role?.TableValue != "Customer")
+                {
+                    _logger.LogWarning("StoreAdmin {UserId} attempted to toggle status of user outside their store: {TargetId}", currentUserId, id);
+                    return Forbid();
+                }
+            }
+
+            // Prevent SuperAdmin from deactivating themselves
+            if (id == currentUserId && !active && User.IsInRole("SuperAdmin"))
+            {
+                _logger.LogWarning("SuperAdmin attempted to deactivate own account: {UserId}", currentUserId);
                 return BadRequest(new { message = "You cannot deactivate your own account." });
             }
 
@@ -882,10 +926,10 @@ public class AuthController : ControllerBase
     }
 
     // ===============================
-    // 16. DELETE USER (SuperAdmin only - Soft Delete)
+    // 16. DELETE USER (SuperAdmin + StoreAdmin) - Soft Delete
     // ===============================
     [HttpDelete("users/{id}")]
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize(Roles = "SuperAdmin,StoreAdmin")]
     public async Task<IActionResult> DeleteUser(string id)
     {
         var currentUser = await _context.Users.FindAsync(GetUserIdFromToken());
@@ -896,17 +940,31 @@ public class AuthController : ControllerBase
 
         try
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
             if (user == null)
             {
                 _logger.LogWarning("DeleteUser failed - User not found: {TargetId}", id);
                 return NotFound(new { message = "User not found." });
             }
 
+            // Role-based authorization
+            if (User.IsInRole("StoreAdmin"))
+            {
+                var storeId = User.FindFirst("StoreId")?.Value;
+                if (user.StoreId != storeId || user.Role?.TableValue != "Customer")
+                {
+                    _logger.LogWarning("StoreAdmin {UserId} attempted to delete user outside their store: {TargetId}", currentUserId, id);
+                    return Forbid();
+                }
+            }
+
             // Prevent SuperAdmin from deleting themselves
             if (id == currentUserId)
             {
-                _logger.LogWarning("DeleteUser failed - SuperAdmin attempted to delete own account: {UserId}", currentUserId);
+                _logger.LogWarning("SuperAdmin attempted to delete own account: {UserId}", currentUserId);
                 return BadRequest(new { message = "You cannot delete your own account." });
             }
 
@@ -928,15 +986,13 @@ public class AuthController : ControllerBase
     }
 
     // ===============================
-    // 17. LOGIN HISTORY (SuperAdmin only)
-    // ===============================
-    // ===============================
-    // 17. LOGIN HISTORY (SuperAdmin only)
+    // 17. LOGIN HISTORY (SuperAdmin only) & My Login History (all users)
     // ===============================
     [HttpGet("login-history")]
     [Authorize(Roles = "SuperAdmin")]
     public async Task<IActionResult> GetLoginHistory([FromQuery] string? userId, [FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate)
     {
+        // ... (unchanged)
         var currentUserId = GetUserIdFromToken();
         _logger.LogInformation("GetLoginHistory called by UserId: {UserId}", currentUserId);
 
@@ -989,6 +1045,7 @@ public class AuthController : ControllerBase
     [HttpGet("my-login-history")]
     public async Task<IActionResult> GetMyLoginHistory()
     {
+        // ... (unchanged)
         var currentUserId = GetUserIdFromToken();
         try
         {
@@ -1021,10 +1078,11 @@ public class AuthController : ControllerBase
     }
 
     // ===============================
-    // HELPER METHODS
+    // HELPER METHODS (unchanged)
     // ===============================
     private string GenerateJwtToken(User user)
     {
+        // ... unchanged
         var jwtSettings = _config.GetSection("JwtSettings");
 
         var claims = new List<Claim>
@@ -1070,6 +1128,7 @@ public class AuthController : ControllerBase
 
     private async Task LogLoginAttempt(string? userId, string status, string? reason)
     {
+        // ... unchanged
         try
         {
             string userAgent = Request.Headers["User-Agent"].ToString() ?? "Unknown";

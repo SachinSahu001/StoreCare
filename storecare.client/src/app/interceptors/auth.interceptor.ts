@@ -30,11 +30,15 @@ export class AuthInterceptor implements HttpInterceptor {
     return next.handle(authReq).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
-          // Unauthorized - token expired or invalid
+          // Unauthorized - token expired or invalid, clear session and redirect
           this.authService.clearStorage();
           this.router.navigate(['/login'], {
             queryParams: { returnUrl: this.router.url }
           });
+        } else if (error.status === 403) {
+          // Forbidden - authenticated but not authorized (e.g. StoreAdmin cross-store access)
+          console.warn(`[AuthInterceptor] 403 Forbidden: ${error.url}`);
+          // Do NOT redirect; let the calling service surface the error via throwError
         }
         return throwError(() => error);
       })

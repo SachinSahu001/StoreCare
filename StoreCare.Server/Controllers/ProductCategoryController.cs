@@ -130,7 +130,7 @@ public class ProductCategoryController : ControllerBase
     }
 
     // ===============================
-    // CREATE CATEGORY (SuperAdmin only) with Auto DisplayOrder
+    // CREATE CATEGORY (SuperAdmin only)
     // ===============================
     [HttpPost]
     [Authorize(Roles = "SuperAdmin")]
@@ -144,39 +144,28 @@ public class ProductCategoryController : ControllerBase
 
         try
         {
-            // Validate unique category name
             if (await _context.ProductCategories.AnyAsync(c => c.CategoryName == dto.CategoryName.Trim()))
-            {
                 return BadRequest(new { message = "Category with this name already exists." });
-            }
 
-            // Get active status
             var activeStatus = await _context.MasterTables
-                .FirstOrDefaultAsync(m => m.TableName == "Status" && m.TableValue == "Active");
+                .FirstOrDefaultAsync(m => m.TableName == "Status" && m.TableValue == "Active")
+                ?? throw new Exception("Active status not configured.");
 
-            if (activeStatus == null)
-                return StatusCode(500, new { message = "Active status not configured." });
-
-            // Auto-generate DisplayOrder if not provided
             int displayOrder = dto.DisplayOrder ?? 0;
             if (displayOrder <= 0)
             {
-                // Get max DisplayOrder from active categories and add 1
                 var maxDisplayOrder = await _context.ProductCategories
                     .Where(c => c.Active == true)
                     .MaxAsync(c => (int?)c.DisplayOrder) ?? 0;
                 displayOrder = maxDisplayOrder + 1;
             }
 
-            // Generate unique category code
             var categoryCode = "CAT-" + Guid.NewGuid().ToString()[..8].ToUpper();
             var categoryId = Guid.NewGuid().ToString();
 
             string? imagePath = null;
             if (dto.CategoryImage != null && dto.CategoryImage.Length > 0)
-            {
                 imagePath = await _fileService.SaveCategoryImageAsync(dto.CategoryImage, categoryId);
-            }
 
             var category = new ProductCategory
             {
@@ -199,20 +188,13 @@ public class ProductCategoryController : ControllerBase
             _context.ProductCategories.Add(category);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Category created successfully: {CategoryName} by {UserName} with DisplayOrder: {DisplayOrder}",
-                category.CategoryName, currentUserName, displayOrder);
+            _logger.LogInformation("Category created successfully: {CategoryName} by {UserName}", category.CategoryName, currentUserName);
 
             return CreatedAtAction(nameof(GetCategoryById), new { id = category.Id }, new
             {
                 success = true,
                 message = "Category created successfully.",
-                data = new
-                {
-                    category.Id,
-                    category.CategoryCode,
-                    category.CategoryName,
-                    category.DisplayOrder
-                }
+                data = new { category.Id, category.CategoryCode, category.CategoryName, category.DisplayOrder }
             });
         }
         catch (Exception ex)
@@ -223,12 +205,17 @@ public class ProductCategoryController : ControllerBase
     }
 
     // ===============================
-    // GET ALL CATEGORIES
+    // GET ALL CATEGORIES (Role‑based)
     // ===============================
     [HttpGet]
     public async Task<IActionResult> GetAllCategories()
     {
-        _logger.LogInformation("GetAllCategories called");
+        var currentUserId = GetUserIdFromToken();
+        var currentUser = await _context.Users
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Id == currentUserId);
+
+        _logger.LogInformation("GetAllCategories called by UserId: {UserId}", currentUserId);
 
         try
         {
@@ -237,10 +224,31 @@ public class ProductCategoryController : ControllerBase
                 .Include(c => c.Products.Where(p => p.Active == true))
                 .Where(c => c.Active == true);
 
-            // Role-based filtering
-            if (!User.Identity?.IsAuthenticated == true || User.IsInRole("Customer"))
+            // Role‑based filtering
+            if (User.IsInRole("SuperAdmin"))
             {
-                query = query.Where(c => c.Status.TableValue == "Active");
+                // SuperAdmin sees all categories (including inactive)
+                query = _context.ProductCategories
+                    .Include(c => c.Status)
+                    .Include(c => c.Products.Where(p => p.Active == true));
+            }
+            else if (User.IsInRole("StoreAdmin"))
+            {
+                var storeId = currentUser?.StoreId;
+                if (string.IsNullOrEmpty(storeId))
+                    return BadRequest(new { message = "StoreAdmin not associated with any store." });
+
+                // StoreAdmin sees categories of products assigned to their store
+                query = query.Where(c => c.Products.Any(p =>
+                    p.StoreProductAssignments.Any(sp => sp.StoreId == storeId && sp.Active == true)));
+            }
+            else // Customer or Unauthenticated
+            {
+                // Only categories with active products that are assigned to active stores
+                query = query.Where(c => c.Status.TableValue == "Active" &&
+                    c.Products.Any(p => p.Active == true &&
+                        p.Status.TableValue == "Active" &&
+                        p.StoreProductAssignments.Any(sp => sp.Active == true && sp.Store.Active == true)));
             }
 
             var categories = await query
@@ -262,7 +270,6 @@ public class ProductCategoryController : ControllerBase
                 })
                 .ToListAsync();
 
-            // Build response with URLs
             var response = categories.Select(c => new CategoryListResponseDto
             {
                 Id = c.Id,
@@ -280,12 +287,7 @@ public class ProductCategoryController : ControllerBase
                 TotalProducts = c.TotalProducts
             }).ToList();
 
-            return Ok(new
-            {
-                success = true,
-                data = response,
-                count = response.Count
-            });
+            return Ok(new { success = true, data = response, count = response.Count });
         }
         catch (Exception ex)
         {
@@ -300,6 +302,11 @@ public class ProductCategoryController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetCategoryById(string id)
     {
+        var currentUserId = GetUserIdFromToken();
+        var currentUser = await _context.Users
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Id == currentUserId);
+
         _logger.LogInformation("GetCategoryById called for CategoryId: {CategoryId}", id);
 
         try
@@ -307,15 +314,28 @@ public class ProductCategoryController : ControllerBase
             var category = await _context.ProductCategories
                 .Include(c => c.Status)
                 .Include(c => c.Products.Where(p => p.Active == true))
+                    .ThenInclude(p => p.Status)
                 .FirstOrDefaultAsync(c => c.Id == id && c.Active == true);
 
             if (category == null)
                 return NotFound(new { message = "Category not found." });
 
-            // Role-based access check
-            if (!User.Identity?.IsAuthenticated == true || User.IsInRole("Customer"))
+            // Role‑based access check
+            if (User.IsInRole("StoreAdmin"))
             {
-                if (category.Status.TableValue != "Active")
+                var storeId = currentUser?.StoreId;
+                if (!category.Products.Any(p =>
+                    p.StoreProductAssignments.Any(sp => sp.StoreId == storeId && sp.Active == true)))
+                {
+                    _logger.LogWarning("StoreAdmin {UserId} attempted to access unauthorized category {CategoryId}", currentUserId, id);
+                    return Forbid();
+                }
+            }
+            else if (!User.Identity?.IsAuthenticated == true || User.IsInRole("Customer"))
+            {
+                if (category.Status.TableValue != "Active" ||
+                    !category.Products.Any(p => p.Active == true && p.Status.TableValue == "Active" &&
+                        p.StoreProductAssignments.Any(sp => sp.Active == true && sp.Store.Active == true)))
                 {
                     return NotFound(new { message = "Category not found." });
                 }
@@ -373,8 +393,7 @@ public class ProductCategoryController : ControllerBase
         var currentUser = await _context.Users.FindAsync(GetUserIdFromToken());
         var currentUserName = currentUser?.FullName ?? "System";
 
-        _logger.LogInformation("UpdateCategory called by: {UserName}, CategoryId: {CategoryId}",
-            currentUserName, id);
+        _logger.LogInformation("UpdateCategory called by: {UserName}, CategoryId: {CategoryId}", currentUserName, id);
 
         try
         {
@@ -386,14 +405,11 @@ public class ProductCategoryController : ControllerBase
 
             bool hasChanges = false;
 
-            // Update name with uniqueness check
             if (!string.IsNullOrWhiteSpace(dto.CategoryName) && dto.CategoryName.Trim() != category.CategoryName)
             {
                 if (await _context.ProductCategories.AnyAsync(c =>
                     c.CategoryName == dto.CategoryName.Trim() && c.Id != id))
-                {
                     return BadRequest(new { message = "Category with this name already exists." });
-                }
 
                 category.CategoryName = dto.CategoryName.Trim();
                 hasChanges = true;
@@ -423,7 +439,6 @@ public class ProductCategoryController : ControllerBase
                 hasChanges = true;
             }
 
-            // Handle category image upload
             if (dto.CategoryImage != null && dto.CategoryImage.Length > 0)
             {
                 try
@@ -435,22 +450,16 @@ public class ProductCategoryController : ControllerBase
                     category.CategoryImage = imagePath;
                     hasChanges = true;
                 }
-                catch (ArgumentException ex)
-                {
-                    return BadRequest(new { message = ex.Message });
-                }
-                catch (InvalidOperationException ex)
+                catch (Exception ex)
                 {
                     return BadRequest(new { message = ex.Message });
                 }
             }
 
-            // Update status
             if (dto.StatusId.HasValue && dto.StatusId.Value != category.StatusId)
             {
                 var statusExists = await _context.MasterTables
                     .AnyAsync(m => m.Id == dto.StatusId.Value && m.TableName == "Status" && m.Active == true);
-
                 if (!statusExists)
                     return BadRequest(new { message = "Invalid status selected." });
 
@@ -463,8 +472,7 @@ public class ProductCategoryController : ControllerBase
                 category.ModifiedDate = GetIndianTime();
                 category.ModifiedBy = currentUserName;
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("Category updated successfully: {CategoryId} by {UserName}",
-                    id, currentUserName);
+                _logger.LogInformation("Category updated successfully: {CategoryId} by {UserName}", id, currentUserName);
             }
 
             return await GetCategoryById(id);
@@ -484,8 +492,7 @@ public class ProductCategoryController : ControllerBase
     public async Task<IActionResult> UpdateCategoryStatus(string id, [FromBody] CategoryStatusUpdateDto dto)
     {
         var currentUser = await _context.Users.FindAsync(GetUserIdFromToken());
-        _logger.LogInformation("UpdateCategoryStatus called by: {UserName}, CategoryId: {CategoryId}",
-            currentUser?.FullName, id);
+        _logger.LogInformation("UpdateCategoryStatus called by: {UserName}, CategoryId: {CategoryId}", currentUser?.FullName, id);
 
         try
         {
@@ -497,7 +504,6 @@ public class ProductCategoryController : ControllerBase
 
             var statusExists = await _context.MasterTables
                 .AnyAsync(m => m.Id == dto.StatusId && m.TableName == "Status" && m.Active == true);
-
             if (!statusExists)
                 return BadRequest(new { message = "Invalid status selected." });
 
@@ -507,14 +513,9 @@ public class ProductCategoryController : ControllerBase
 
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Category status updated: {CategoryId} to StatusId: {StatusId}",
-                id, dto.StatusId);
+            _logger.LogInformation("Category status updated: {CategoryId} to StatusId: {StatusId}", id, dto.StatusId);
 
-            return Ok(new
-            {
-                success = true,
-                message = "Category status updated successfully."
-            });
+            return Ok(new { success = true, message = "Category status updated successfully." });
         }
         catch (Exception ex)
         {
@@ -531,8 +532,7 @@ public class ProductCategoryController : ControllerBase
     public async Task<IActionResult> DeleteCategory(string id)
     {
         var currentUser = await _context.Users.FindAsync(GetUserIdFromToken());
-        _logger.LogInformation("DeleteCategory called by: {UserName}, CategoryId: {CategoryId}",
-            currentUser?.FullName, id);
+        _logger.LogInformation("DeleteCategory called by: {UserName}, CategoryId: {CategoryId}", currentUser?.FullName, id);
 
         try
         {
@@ -543,31 +543,22 @@ public class ProductCategoryController : ControllerBase
             if (category == null)
                 return NotFound(new { message = "Category not found." });
 
-            // Check if category has active products
             if (category.Products.Any(p => p.Active == true))
-            {
                 return BadRequest(new
                 {
                     message = "Cannot delete category with active products. Please deactivate or delete products first.",
                     activeProducts = category.Products.Count(p => p.Active == true)
                 });
-            }
 
-            // Soft delete category
             category.Active = false;
             category.ModifiedDate = GetIndianTime();
             category.ModifiedBy = currentUser?.FullName ?? "System";
 
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Category deleted successfully: {CategoryId} by {UserName}",
-                id, currentUser?.FullName);
+            _logger.LogInformation("Category deleted successfully: {CategoryId} by {UserName}", id, currentUser?.FullName);
 
-            return Ok(new
-            {
-                success = true,
-                message = "Category deleted successfully."
-            });
+            return Ok(new { success = true, message = "Category deleted successfully." });
         }
         catch (Exception ex)
         {
@@ -603,7 +594,6 @@ public class ProductCategoryController : ControllerBase
                 .Take(8)
                 .ToListAsync();
 
-            // Build response with URLs
             var response = categories.Select(c => new
             {
                 c.Id,
@@ -631,8 +621,7 @@ public class ProductCategoryController : ControllerBase
     [Authorize(Roles = "SuperAdmin")]
     public async Task<IActionResult> ReorderCategories([FromBody] Dictionary<string, int> categoryOrders)
     {
-        _logger.LogInformation("ReorderCategories called by: {UserName}",
-            User.FindFirstValue("FullName") ?? "Unknown");
+        _logger.LogInformation("ReorderCategories called by: {UserName}", User.FindFirstValue("FullName") ?? "Unknown");
 
         try
         {
@@ -657,11 +646,7 @@ public class ProductCategoryController : ControllerBase
 
             _logger.LogInformation("Categories reordered successfully");
 
-            return Ok(new
-            {
-                success = true,
-                message = "Categories reordered successfully."
-            });
+            return Ok(new { success = true, message = "Categories reordered successfully." });
         }
         catch (Exception ex)
         {

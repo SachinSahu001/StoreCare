@@ -95,13 +95,35 @@ export class ManageUsersComponent implements OnInit {
     }
   }
 
-  getUserImage(userId: string): string {
-    // Assuming environment.apiUrl is available or relative path usage
-    // Using relative path which proxy/interceptor should handle or hardcoded base if needed.
-    // Based on requirements check: `${environment.apiUrl}/api/Auth/profile-picture/${id}`
-    // Since environment is not imported, I will use a safe relative path or try to import it.
-    // However, existing code might not have environment imported. 
-    // I'll use the relative path assuming proxy is set up or add /api prefix.
-    return `/api/Auth/profile-picture/${userId}`;
+  /** Returns 1–2 uppercase initials from a full name. */
+  getInitials(fullName: string): string {
+    if (!fullName) return '?';
+    const parts = fullName.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+
+  /** Deterministic background color from name (no two same-initial names get the same color). */
+  getAvatarColor(fullName: string): string {
+    const colors = [
+      '#4f46e5', '#0891b2', '#059669', '#d97706',
+      '#dc2626', '#7c3aed', '#db2777', '#0284c7'
+    ];
+    let hash = 0;
+    for (let i = 0; i < (fullName || '').length; i++) {
+      hash = fullName.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  }
+
+  /** When an img src 404s or errors, hide the img and show the sibling initials div. */
+  onAvatarError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+    const wrapper = img.closest('.avatar-wrapper');
+    if (wrapper) {
+      const fallback = wrapper.querySelector('.avatar-initials') as HTMLElement;
+      if (fallback) fallback.style.display = 'flex';
+    }
   }
 }

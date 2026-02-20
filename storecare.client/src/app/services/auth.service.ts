@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, catchError, throwError, timeout, map } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
@@ -37,7 +37,9 @@ export interface UserProfile {
   phone: string;
   role: string;
   status: string;
+  statusColor?: string;    // e.g. 'green' | 'red' | 'orange' — for badge CSS
   active: boolean;
+  isActive?: boolean;      // soft-delete state (mirrors active)
   storeId?: string;
   storeName?: string;
   profilePicture?: string;
@@ -92,9 +94,10 @@ export class AuthService {
     return this.http.get<any>(url).pipe(
       map(response => {
         const users = Array.isArray(response) ? response : (response.data || []);
-        return users.map((user: UserProfile) => ({
+        return users.map((user: any) => ({
           ...user,
-          profilePictureUrl: this.getAbsoluteImageUrl(user.profilePictureUrl)
+          // Backend sends 'profilePicture' (raw path); normalise to absolute URL
+          profilePictureUrl: this.getAbsoluteImageUrl(user.profilePictureUrl || user.profilePicture)
         }));
       }),
       catchError(this.handleError)
@@ -108,7 +111,11 @@ export class AuthService {
   }
 
   toggleUserStatus(userId: string, active: boolean): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/users/${userId}/toggle-status`, { active }).pipe(
+    return this.http.patch(
+      `${this.apiUrl}/users/${userId}/toggle-status`,
+      active,   // raw boolean — backend reads body as bool, not an object
+      { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) }
+    ).pipe(
       catchError(this.handleError)
     );
   }

@@ -129,7 +129,7 @@ public class StoreController : ControllerBase
     }
 
     // ===============================
-    // GET ALL STORES
+    // GET ALL STORES (SuperAdmin sees all; StoreAdmin sees only own)
     // ===============================
     [HttpGet]
     [Authorize(Roles = "SuperAdmin,StoreAdmin")]
@@ -155,7 +155,7 @@ public class StoreController : ControllerBase
                     .ThenInclude(sp => sp.Product)
                 .Where(s => s.Active == true);
 
-            // Role-based filtering
+            // Role‑based filtering
             if (User.IsInRole("StoreAdmin"))
             {
                 var userStoreId = currentUser.StoreId;
@@ -186,7 +186,6 @@ public class StoreController : ControllerBase
                 })
                 .ToListAsync();
 
-            // Build response with URLs
             var response = stores.Select(s => new StoreListResponseDto
             {
                 Id = s.Id,
@@ -207,13 +206,7 @@ public class StoreController : ControllerBase
                 TotalProducts = s.TotalProducts
             }).ToList();
 
-            return Ok(new
-            {
-                success = true,
-                data = response,
-                count = response.Count,
-                role = currentUser.Role?.TableValue
-            });
+            return Ok(new { success = true, data = response, count = response.Count, role = currentUser.Role?.TableValue });
         }
         catch (Exception ex)
         {
@@ -237,16 +230,14 @@ public class StoreController : ControllerBase
         if (currentUser == null)
             return Unauthorized(new { message = "User not found." });
 
-        _logger.LogInformation("GetStoreById called by UserId: {UserId}, StoreId: {StoreId}",
-            currentUserId, id);
+        _logger.LogInformation("GetStoreById called by UserId: {UserId}, StoreId: {StoreId}", currentUserId, id);
 
         try
         {
-            // Role-based access check
+            // Role‑based access check
             if (User.IsInRole("StoreAdmin") && currentUser.StoreId != id)
             {
-                _logger.LogWarning("StoreAdmin {UserId} attempted to access unauthorized store {StoreId}",
-                    currentUserId, id);
+                _logger.LogWarning("StoreAdmin {UserId} attempted to access unauthorized store {StoreId}", currentUserId, id);
                 return Forbid();
             }
 
@@ -301,7 +292,7 @@ public class StoreController : ControllerBase
     }
 
     // ===============================
-    // UPDATE STORE
+    // UPDATE STORE (SuperAdmin or the StoreAdmin of that store)
     // ===============================
     [HttpPut("{id}")]
     [Authorize(Roles = "SuperAdmin,StoreAdmin")]
@@ -316,16 +307,14 @@ public class StoreController : ControllerBase
         if (currentUser == null)
             return Unauthorized(new { message = "User not found." });
 
-        _logger.LogInformation("UpdateStore called by UserId: {UserId}, StoreId: {StoreId}",
-            currentUserId, id);
+        _logger.LogInformation("UpdateStore called by UserId: {UserId}, StoreId: {StoreId}", currentUserId, id);
 
         try
         {
-            // Role-based access check
+            // Role‑based access check
             if (User.IsInRole("StoreAdmin") && currentUser.StoreId != id)
             {
-                _logger.LogWarning("StoreAdmin {UserId} attempted to update unauthorized store {StoreId}",
-                    currentUserId, id);
+                _logger.LogWarning("StoreAdmin {UserId} attempted to update unauthorized store {StoreId}", currentUserId, id);
                 return Forbid();
             }
 
@@ -376,11 +365,7 @@ public class StoreController : ControllerBase
 
                     _logger.LogInformation("Store logo updated for StoreId: {StoreId}", id);
                 }
-                catch (ArgumentException ex)
-                {
-                    return BadRequest(new { message = ex.Message });
-                }
-                catch (InvalidOperationException ex)
+                catch (Exception ex)
                 {
                     return BadRequest(new { message = ex.Message });
                 }
@@ -391,7 +376,6 @@ public class StoreController : ControllerBase
             {
                 var statusExists = await _context.MasterTables
                     .AnyAsync(m => m.Id == dto.StatusId.Value && m.TableName == "Status" && m.Active == true);
-
                 if (!statusExists)
                     return BadRequest(new { message = "Invalid status selected." });
 
@@ -403,10 +387,8 @@ public class StoreController : ControllerBase
             {
                 store.ModifiedDate = GetIndianTime();
                 store.ModifiedBy = currentUser.FullName;
-
                 await _context.SaveChangesAsync();
-                _logger.LogInformation("Store updated successfully: {StoreId} by {UserName}",
-                    id, currentUser.FullName);
+                _logger.LogInformation("Store updated successfully: {StoreId} by {UserName}", id, currentUser.FullName);
             }
 
             return await GetStoreById(id);
@@ -426,8 +408,7 @@ public class StoreController : ControllerBase
     public async Task<IActionResult> UpdateStoreStatus(string id, [FromBody] StoreStatusUpdateDto dto)
     {
         var currentUser = await _context.Users.FindAsync(GetUserIdFromToken());
-        _logger.LogInformation("UpdateStoreStatus called by: {UserName}, StoreId: {StoreId}",
-            currentUser?.FullName, id);
+        _logger.LogInformation("UpdateStoreStatus called by: {UserName}, StoreId: {StoreId}", currentUser?.FullName, id);
 
         try
         {
@@ -439,7 +420,6 @@ public class StoreController : ControllerBase
 
             var statusExists = await _context.MasterTables
                 .AnyAsync(m => m.Id == dto.StatusId && m.TableName == "Status" && m.Active == true);
-
             if (!statusExists)
                 return BadRequest(new { message = "Invalid status selected." });
 
@@ -449,15 +429,9 @@ public class StoreController : ControllerBase
 
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Store status updated: {StoreId} to StatusId: {StatusId}",
-                id, dto.StatusId);
+            _logger.LogInformation("Store status updated: {StoreId} to StatusId: {StatusId}", id, dto.StatusId);
 
-            return Ok(new
-            {
-                success = true,
-                message = "Store status updated successfully.",
-                statusId = dto.StatusId
-            });
+            return Ok(new { success = true, message = "Store status updated successfully.", statusId = dto.StatusId });
         }
         catch (Exception ex)
         {
@@ -474,8 +448,7 @@ public class StoreController : ControllerBase
     public async Task<IActionResult> DeleteStore(string id)
     {
         var currentUser = await _context.Users.FindAsync(GetUserIdFromToken());
-        _logger.LogInformation("DeleteStore called by: {UserName}, StoreId: {StoreId}",
-            currentUser?.FullName, id);
+        _logger.LogInformation("DeleteStore called by: {UserName}, StoreId: {StoreId}", currentUser?.FullName, id);
 
         try
         {
@@ -519,14 +492,9 @@ public class StoreController : ControllerBase
 
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Store deleted successfully: {StoreId} by {UserName}",
-                id, currentUser?.FullName);
+            _logger.LogInformation("Store deleted successfully: {StoreId} by {UserName}", id, currentUser?.FullName);
 
-            return Ok(new
-            {
-                success = true,
-                message = "Store and all associated records deleted successfully."
-            });
+            return Ok(new { success = true, message = "Store and all associated records deleted successfully." });
         }
         catch (Exception ex)
         {
@@ -542,8 +510,7 @@ public class StoreController : ControllerBase
     [Authorize(Roles = "SuperAdmin")]
     public async Task<IActionResult> GetStoreStatistics()
     {
-        _logger.LogInformation("GetStoreStatistics called by: {UserName}",
-            User.FindFirstValue("FullName") ?? "Unknown");
+        _logger.LogInformation("GetStoreStatistics called by: {UserName}", User.FindFirstValue("FullName") ?? "Unknown");
 
         try
         {
@@ -636,4 +603,4 @@ public class StoreController : ControllerBase
             _ => "blue"
         };
     }
-}
+}   
