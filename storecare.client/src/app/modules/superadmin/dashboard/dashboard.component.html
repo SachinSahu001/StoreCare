@@ -7,11 +7,11 @@
     </div>
     <div class="header-right">
       <div class="date-display">
-        <mat-icon>calendar_today</mat-icon>
+        <i class="fas fa-calendar-alt"></i>
         <span>{{ currentDate | date:'EEEE, MMMM d, y' }}</span>
       </div>
       <button class="refresh-btn" (click)="refreshData()" [disabled]="loading">
-        <mat-icon [class.spinning]="loading">refresh</mat-icon>
+        <i class="fas fa-sync-alt" [class.spinning]="loading"></i>
         Refresh
       </button>
     </div>
@@ -33,11 +33,11 @@
 
   <!-- Error State -->
   <div *ngIf="!loading && error" class="error-state">
-    <mat-icon class="error-icon">error_outline</mat-icon>
+    <i class="fas fa-exclamation-circle error-icon"></i>
     <h3>Failed to load dashboard data</h3>
     <p>{{ error }}</p>
     <button class="retry-btn" (click)="refreshData()">
-      <mat-icon>refresh</mat-icon>
+      <i class="fas fa-sync-alt"></i>
       Try Again
     </button>
   </div>
@@ -48,7 +48,7 @@
     <mat-card class="stat-card" (click)="navigateToStores()">
       <mat-card-header>
         <div mat-card-avatar class="stat-icon store-icon">
-          <mat-icon>store</mat-icon>
+          <i class="fas fa-store"></i>
         </div>
         <mat-card-title>Total Stores</mat-card-title>
         <mat-card-subtitle>Registered businesses</mat-card-subtitle>
@@ -56,12 +56,14 @@
       <mat-card-content>
         <h2 class="stat-value">{{ formatNumber(stats.totalStores) }}</h2>
         <div class="stat-trend" [class]="getTrendClass(stats.storeGrowth)">
-          <mat-icon>{{ getTrendIcon(stats.storeGrowth) }}</mat-icon>
+          <i class="fas" [class.fa-arrow-up]="getTrendIcon(stats.storeGrowth) === 'arrow_upward'"
+             [class.fa-arrow-down]="getTrendIcon(stats.storeGrowth) === 'arrow_downward'"
+             [class.fa-minus]="getTrendIcon(stats.storeGrowth) === 'remove'"></i>
           <span>{{ formatPercentage(stats.storeGrowth) }} from last month</span>
         </div>
       </mat-card-content>
       <mat-card-actions>
-        <button class="card-action-btn">View Details <mat-icon>chevron_right</mat-icon></button>
+        <button class="card-action-btn">View Details <i class="fas fa-chevron-right"></i></button>
       </mat-card-actions>
     </mat-card>
 
@@ -69,7 +71,7 @@
     <mat-card class="stat-card" (click)="navigateToProducts()">
       <mat-card-header>
         <div mat-card-avatar class="stat-icon product-icon">
-          <mat-icon>inventory_2</mat-icon>
+          <i class="fas fa-box"></i>
         </div>
         <mat-card-title>Total Products</mat-card-title>
         <mat-card-subtitle>Active listings</mat-card-subtitle>
@@ -77,12 +79,14 @@
       <mat-card-content>
         <h2 class="stat-value">{{ formatNumber(stats.totalProducts) }}</h2>
         <div class="stat-trend" [class]="getTrendClass(stats.productGrowth)">
-          <mat-icon>{{ getTrendIcon(stats.productGrowth) }}</mat-icon>
+          <i class="fas" [class.fa-arrow-up]="getTrendIcon(stats.productGrowth) === 'arrow_upward'"
+             [class.fa-arrow-down]="getTrendIcon(stats.productGrowth) === 'arrow_downward'"
+             [class.fa-minus]="getTrendIcon(stats.productGrowth) === 'remove'"></i>
           <span>{{ formatPercentage(stats.productGrowth) }} from last month</span>
         </div>
       </mat-card-content>
       <mat-card-actions>
-        <button class="card-action-btn">View Details <mat-icon>chevron_right</mat-icon></button>
+        <button class="card-action-btn">View Details <i class="fas fa-chevron-right"></i></button>
       </mat-card-actions>
     </mat-card>
 
@@ -90,7 +94,7 @@
     <mat-card class="stat-card" (click)="navigateToCategories()">
       <mat-card-header>
         <div mat-card-avatar class="stat-icon category-icon">
-          <mat-icon>category</mat-icon>
+          <i class="fas fa-tags"></i>
         </div>
         <mat-card-title>Categories</mat-card-title>
         <mat-card-subtitle>Active categories</mat-card-subtitle>
@@ -98,12 +102,14 @@
       <mat-card-content>
         <h2 class="stat-value">{{ formatNumber(stats.totalCategories) }}</h2>
         <div class="stat-trend" [class]="getTrendClass(stats.categoryGrowth)">
-          <mat-icon>{{ getTrendIcon(stats.categoryGrowth) }}</mat-icon>
+          <i class="fas" [class.fa-arrow-up]="getTrendIcon(stats.categoryGrowth) === 'arrow_upward'"
+             [class.fa-arrow-down]="getTrendIcon(stats.categoryGrowth) === 'arrow_downward'"
+             [class.fa-minus]="getTrendIcon(stats.categoryGrowth) === 'remove'"></i>
           <span>{{ formatPercentage(stats.categoryGrowth) }} from last month</span>
         </div>
       </mat-card-content>
       <mat-card-actions>
-        <button class="card-action-btn">View Details <mat-icon>chevron_right</mat-icon></button>
+        <button class="card-action-btn">View Details <i class="fas fa-chevron-right"></i></button>
       </mat-card-actions>
     </mat-card>
 
@@ -111,7 +117,7 @@
     <mat-card class="stat-card" (click)="navigateToCustomers()">
       <mat-card-header>
         <div mat-card-avatar class="stat-icon customer-icon">
-          <mat-icon>people</mat-icon>
+          <i class="fas fa-users"></i>
         </div>
         <mat-card-title>Customers</mat-card-title>
         <mat-card-subtitle>Registered users</mat-card-subtitle>
@@ -119,12 +125,14 @@
       <mat-card-content>
         <h2 class="stat-value">{{ formatNumber(stats.totalCustomers) }}</h2>
         <div class="stat-trend" [class]="getTrendClass(stats.customerGrowth)">
-          <mat-icon>{{ getTrendIcon(stats.customerGrowth) }}</mat-icon>
+          <i class="fas" [class.fa-arrow-up]="getTrendIcon(stats.customerGrowth) === 'arrow_upward'"
+             [class.fa-arrow-down]="getTrendIcon(stats.customerGrowth) === 'arrow_downward'"
+             [class.fa-minus]="getTrendIcon(stats.customerGrowth) === 'remove'"></i>
           <span>{{ formatPercentage(stats.customerGrowth) }} from last month</span>
         </div>
       </mat-card-content>
       <mat-card-actions>
-        <button class="card-action-btn">View Details <mat-icon>chevron_right</mat-icon></button>
+        <button class="card-action-btn">View Details <i class="fas fa-chevron-right"></i></button>
       </mat-card-actions>
     </mat-card>
   </div>

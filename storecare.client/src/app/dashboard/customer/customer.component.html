@@ -33,7 +33,7 @@
     <div class="categories-grid">
       <div class="category-card" *ngFor="let category of categories"
            (click)="viewCategory(category.id)">
-        <div class="category-icon" [style.background]="category.color || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'">
+        <div class="category-icon" [style.background]="category.color || 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)'">
           <i class="fas" [class]="category.icon || 'fa-tag'"></i>
         </div>
         <h3>{{ category.categoryName }}</h3>
