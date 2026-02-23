@@ -1,150 +1,150 @@
 <div class="assignments-container">
-    <div class="header-section">
-        <div>
-            <h1>Manage Assignments</h1>
-            <p>Assign products to stores and manage inventory distribution</p>
-        </div>
+  <div class="header-section">
+    <div>
+      <h1>Manage Assignments</h1>
+      <p>Assign products to stores and manage inventory distribution</p>
     </div>
+  </div>
 
-    <mat-tab-group [(selectedIndex)]="selectedTab" animationDuration="0ms">
-        <!-- TAB 1: EXISTING ASSIGNMENTS -->
-        <mat-tab label="Assignments List">
-            <div class="tab-content">
-                <mat-card class="table-card">
-                    <div *ngIf="isLoading" class="loading-spinner">
-                        <mat-spinner diameter="40"></mat-spinner>
-                    </div>
+  <mat-tab-group [(selectedIndex)]="selectedTab" animationDuration="0ms">
+    <!-- TAB 1: EXISTING ASSIGNMENTS -->
+    <mat-tab label="Assignments List">
+      <div class="tab-content">
+        <mat-card class="table-card">
+          <div *ngIf="isLoading" class="loading-spinner">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
 
-                    <table mat-table [dataSource]="dataSource" matSort>
-                        <!-- Store Column -->
-                        <ng-container matColumnDef="storeName">
-                            <th mat-header-cell *matHeaderCellDef mat-sort-header> Store </th>
-                            <td mat-cell *matCellDef="let row"> {{row.storeName}} </td>
-                        </ng-container>
+          <table mat-table [dataSource]="dataSource" matSort>
+            <!-- Store Column -->
+            <ng-container matColumnDef="storeName">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> Store </th>
+              <td mat-cell *matCellDef="let row"> {{row.storeName}} </td>
+            </ng-container>
 
-                        <!-- Product Column -->
-                        <ng-container matColumnDef="productName">
-                            <th mat-header-cell *matHeaderCellDef mat-sort-header> Product </th>
-                            <td mat-cell *matCellDef="let row">
-                                <div style="font-weight: 500;">{{row.productName}}</div>
-                                <div style="font-size: 11px; color: grey;">{{row.productCode}}</div>
-                            </td>
-                        </ng-container>
+            <!-- Product Column -->
+            <ng-container matColumnDef="productName">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> Product </th>
+              <td mat-cell *matCellDef="let row">
+                <div style="font-weight: 500;">{{row.productName}}</div>
+                <div style="font-size: 11px; color: grey;">{{row.productCode}}</div>
+              </td>
+            </ng-container>
 
-                        <!-- Category Column -->
-                        <ng-container matColumnDef="categoryName">
-                            <th mat-header-cell *matHeaderCellDef mat-sort-header> Category </th>
-                            <td mat-cell *matCellDef="let row"> {{row.categoryName}} </td>
-                        </ng-container>
+            <!-- Category Column -->
+            <ng-container matColumnDef="categoryName">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header> Category </th>
+              <td mat-cell *matCellDef="let row"> {{row.categoryName}} </td>
+            </ng-container>
 
-                        <!-- Status Column -->
-                        <ng-container matColumnDef="status">
-                            <th mat-header-cell *matHeaderCellDef> Status </th>
-                            <td mat-cell *matCellDef="let row">
-                                <span class="status-badge" [style.background-color]="row.statusColor + '20'"
-                                    [style.color]="row.statusColor">
-                                    {{row.status}}
-                                </span>
-                            </td>
-                        </ng-container>
+            <!-- Status Column -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef> Status </th>
+              <td mat-cell *matCellDef="let row">
+                <span class="status-badge" [style.background-color]="row.statusColor + '20'"
+                      [style.color]="row.statusColor">
+                  {{row.status}}
+                </span>
+              </td>
+            </ng-container>
 
-                        <!-- Actions -->
-                        <ng-container matColumnDef="actions">
-                            <th mat-header-cell *matHeaderCellDef> Actions </th>
-                            <td mat-cell *matCellDef="let row">
-                                <button mat-icon-button color="warn" (click)="deleteAssignment(row.id)">
-                                    <i class="fa-solid fa-unlink"></i>
-                                </button>
-                            </td>
-                        </ng-container>
+            <!-- Actions -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef> Actions </th>
+              <td mat-cell *matCellDef="let row">
+                <button mat-icon-button color="warn" (click)="deleteAssignment(row.id)">
+                  <i class="fa-solid fa-unlink"></i>
+                </button>
+              </td>
+            </ng-container>
 
-                        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-                    </table>
-                    <mat-paginator [pageSizeOptions]="[10, 25, 100]" showFirstLastButtons></mat-paginator>
-                </mat-card>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+          <mat-paginator [pageSizeOptions]="[10, 25, 100]" showFirstLastButtons></mat-paginator>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- TAB 2: CREATE NEW (BULK) -->
+    <mat-tab label="New Assignment">
+      <div class="tab-content">
+        <mat-card class="wizard-card" [formGroup]="assignmentForm">
+          <!-- Step 1: Selection -->
+          <div class="wizard-step">
+            <h3>1. Select Store & Category</h3>
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Store</mat-label>
+                <mat-select formControlName="storeId" (selectionChange)="availableProducts = []">
+                  <mat-option *ngFor="let s of stores" [value]="s.id">{{s.storeName}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Category</mat-label>
+                <mat-select formControlName="categoryId" (selectionChange)="availableProducts = []">
+                  <mat-option *ngFor="let c of categories"
+                              [value]="c.id">{{c.categoryName}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <button mat-raised-button color="primary" [disabled]="assignmentForm.invalid"
+                      (click)="onStep1Next()">
+                Load Products
+              </button>
             </div>
-        </mat-tab>
+          </div>
 
-        <!-- TAB 2: CREATE NEW (BULK) -->
-        <mat-tab label="New Assignment">
-            <div class="tab-content">
-                <mat-card class="wizard-card" [formGroup]="assignmentForm">
-                    <!-- Step 1: Selection -->
-                    <div class="wizard-step">
-                        <h3>1. Select Store & Category</h3>
-                        <div class="form-row">
-                            <mat-form-field appearance="outline">
-                                <mat-label>Store</mat-label>
-                                <mat-select formControlName="storeId" (selectionChange)="availableProducts = []">
-                                    <mat-option *ngFor="let s of stores" [value]="s.id">{{s.storeName}}</mat-option>
-                                </mat-select>
-                            </mat-form-field>
+          <!-- Step 2: Product List -->
+          <div class="wizard-step" *ngIf="availableProducts.length > 0 || isStep2Loading">
+            <mat-divider style="margin: 16px 0;"></mat-divider>
+            <h3>2. Select Products to Assign</h3>
 
-                            <mat-form-field appearance="outline">
-                                <mat-label>Category</mat-label>
-                                <mat-select formControlName="categoryId" (selectionChange)="availableProducts = []">
-                                    <mat-option *ngFor="let c of categories"
-                                        [value]="c.id">{{c.categoryName}}</mat-option>
-                                </mat-select>
-                            </mat-form-field>
-
-                            <button mat-raised-button color="primary" [disabled]="assignmentForm.invalid"
-                                (click)="onStep1Next()">
-                                Load Products
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Step 2: Product List -->
-                    <div class="wizard-step" *ngIf="availableProducts.length > 0 || isStep2Loading">
-                        <mat-divider style="margin: 16px 0;"></mat-divider>
-                        <h3>2. Select Products to Assign</h3>
-
-                        <div *ngIf="isStep2Loading" class="loading-spinner">
-                            <mat-spinner diameter="30"></mat-spinner>
-                        </div>
-
-                        <div class="product-grid" *ngIf="!isStep2Loading">
-                            <div class="grid-header">
-                                <mat-checkbox (change)="$event ? toggleAll() : null"
-                                    [checked]="productSelection.hasValue() && isAllSelected()"
-                                    [indeterminate]="productSelection.hasValue() && !isAllSelected()">
-                                    Select All
-                                </mat-checkbox>
-                                <span>{{productSelection.selected.length}} Selected</span>
-                            </div>
-
-                            <div class="product-list">
-                                <div class="product-item" *ngFor="let p of filteredProducts()"
-                                    [class.assigned]="p.isAssigned" (click)="toggleProduct(p)">
-
-                                    <mat-checkbox [checked]="productSelection.isSelected(p) || p.isAssigned"
-                                        [disabled]="p.isAssigned" (click)="$event.stopPropagation()">
-                                    </mat-checkbox>
-
-                                    <img [src]="p.productImageUrl || 'assets/placeholder.png'" class="product-thumb">
-
-                                    <div class="product-info">
-                                        <div class="name">{{p.productName}}</div>
-                                        <div class="code">{{p.productCode}}</div>
-                                    </div>
-
-                                    <div class="badge" *ngIf="p.isAssigned">Assigned</div>
-                                </div>
-                            </div>
-
-                            <div class="actions-footer">
-                                <button mat-raised-button color="accent"
-                                    [disabled]="productSelection.isEmpty() || isLoading" (click)="submitAssignment()">
-                                    <i class="fa-solid fa-clipboard-check" style="margin-right: 8px;"></i>
-                                    Assign {{productSelection.selected.length}} Products
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </mat-card>
+            <div *ngIf="isStep2Loading" class="loading-spinner">
+              <mat-spinner diameter="30"></mat-spinner>
             </div>
-        </mat-tab>
-    </mat-tab-group>
+
+            <div class="product-grid" *ngIf="!isStep2Loading">
+              <div class="grid-header">
+                <mat-checkbox (change)="$event ? toggleAll() : null"
+                              [checked]="productSelection.hasValue() && isAllSelected()"
+                              [indeterminate]="productSelection.hasValue() && !isAllSelected()">
+                  Select All
+                </mat-checkbox>
+                <span>{{productSelection.selected.length}} Selected</span>
+              </div>
+
+              <div class="product-list">
+                <div class="product-item" *ngFor="let p of filteredProducts()"
+                     [class.assigned]="p.isAssigned" (click)="toggleProduct(p)">
+
+                  <mat-checkbox [checked]="productSelection.isSelected(p) || p.isAssigned"
+                                [disabled]="p.isAssigned" (click)="$event.stopPropagation()">
+                  </mat-checkbox>
+
+                  <img [src]="p.productImageUrl || 'assets/placeholder.png'" class="product-thumb">
+
+                  <div class="product-info">
+                    <div class="name">{{p.productName}}</div>
+                    <div class="code">{{p.productCode}}</div>
+                  </div>
+
+                  <div class="badge" *ngIf="p.isAssigned">Assigned</div>
+                </div>
+              </div>
+
+              <div class="actions-footer">
+                <button mat-raised-button color="accent"
+                        [disabled]="productSelection.isEmpty() || isLoading" (click)="submitAssignment()">
+                  <i class="fa-solid fa-clipboard-check" style="margin-right: 8px;"></i>
+                  Assign {{productSelection.selected.length}} Products
+                </button>
+              </div>
+            </div>
+          </div>
+        </mat-card>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
 </div>

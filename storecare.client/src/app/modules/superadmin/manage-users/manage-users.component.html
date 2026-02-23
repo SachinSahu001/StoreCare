@@ -1,120 +1,120 @@
 <div class="users-container">
-    <div class="header-section">
-        <div>
-            <h1>Manage Users</h1>
-            <p>View and manage system users</p>
-        </div>
-        <button mat-raised-button color="primary" (click)="createStoreAdmin()">
-            <mat-icon>add</mat-icon> Create Store Admin
-        </button>
+  <div class="header-section">
+    <div>
+      <h1>Manage Users</h1>
+      <p>View and manage system users</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="createStoreAdmin()">
+      <i class="fas fa-plus"></i> Create Store Admin
+    </button>
+  </div>
+
+  <mat-card class="table-card">
+    <div class="filter-controls">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search Users</mat-label>
+        <input matInput (keyup)="applyFilter($event)" placeholder="Ex. John Doe" #input>
+        <i matSuffix class="fas fa-search"></i>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="role-filter">
+        <mat-label>Filter by Role</mat-label>
+        <mat-select [(ngModel)]="selectedRole" (selectionChange)="onRoleChange()">
+          <mat-option value="">All Roles</mat-option>
+          <mat-option *ngFor="let role of roles" [value]="role">
+            {{role}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
     </div>
 
-    <mat-card class="table-card">
-        <div class="filter-controls">
-            <mat-form-field appearance="outline" class="search-field">
-                <mat-label>Search Users</mat-label>
-                <input matInput (keyup)="applyFilter($event)" placeholder="Ex. John Doe" #input>
-                <mat-icon matSuffix>search</mat-icon>
-            </mat-form-field>
+    <div *ngIf="isLoading" class="loading-spinner">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
 
-            <mat-form-field appearance="outline" class="role-filter">
-                <mat-label>Filter by Role</mat-label>
-                <mat-select [(ngModel)]="selectedRole" (selectionChange)="onRoleChange()">
-                    <mat-option value="">All Roles</mat-option>
-                    <mat-option *ngFor="let role of roles" [value]="role">
-                        {{role}}
-                    </mat-option>
-                </mat-select>
-            </mat-form-field>
-        </div>
+    <div class="table-container" [hidden]="isLoading">
+      <table mat-table [dataSource]="dataSource" matSort>
 
-        <div *ngIf="isLoading" class="loading-spinner">
-            <mat-spinner diameter="40"></mat-spinner>
-        </div>
+        <!-- Profile Pic Column -->
+        <ng-container matColumnDef="profilePicture">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let row">
+            <div class="avatar-wrapper">
+              <!-- Profile image (hidden if no URL or on error) -->
+              <img *ngIf="row.profilePictureUrl" [src]="row.profilePictureUrl" class="user-avatar"
+                   [alt]="row.fullName" (error)="onAvatarError($event)">
+              <!-- Initials fallback (shown when no image) -->
+              <div *ngIf="!row.profilePictureUrl" class="avatar-initials"
+                   [style.background]="getAvatarColor(row.fullName)" [title]="row.fullName">
+                {{ getInitials(row.fullName) }}
+              </div>
+            </div>
+          </td>
+        </ng-container>
 
-        <div class="table-container" [hidden]="isLoading">
-            <table mat-table [dataSource]="dataSource" matSort>
+        <!-- Name Column -->
+        <ng-container matColumnDef="fullName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Name </th>
+          <td mat-cell *matCellDef="let row"> {{row.fullName}} </td>
+        </ng-container>
 
-                <!-- Profile Pic Column -->
-                <ng-container matColumnDef="profilePicture">
-                    <th mat-header-cell *matHeaderCellDef></th>
-                    <td mat-cell *matCellDef="let row">
-                        <div class="avatar-wrapper">
-                            <!-- Profile image (hidden if no URL or on error) -->
-                            <img *ngIf="row.profilePictureUrl" [src]="row.profilePictureUrl" class="user-avatar"
-                                [alt]="row.fullName" (error)="onAvatarError($event)">
-                            <!-- Initials fallback (shown when no image) -->
-                            <div *ngIf="!row.profilePictureUrl" class="avatar-initials"
-                                [style.background]="getAvatarColor(row.fullName)" [title]="row.fullName">
-                                {{ getInitials(row.fullName) }}
-                            </div>
-                        </div>
-                    </td>
-                </ng-container>
+        <!-- Email Column -->
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Email </th>
+          <td mat-cell *matCellDef="let row"> {{row.email}} </td>
+        </ng-container>
 
-                <!-- Name Column -->
-                <ng-container matColumnDef="fullName">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Name </th>
-                    <td mat-cell *matCellDef="let row"> {{row.fullName}} </td>
-                </ng-container>
+        <!-- Phone Column -->
+        <ng-container matColumnDef="phone">
+          <th mat-header-cell *matHeaderCellDef> Phone </th>
+          <td mat-cell *matCellDef="let row"> {{row.phone}} </td>
+        </ng-container>
 
-                <!-- Email Column -->
-                <ng-container matColumnDef="email">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Email </th>
-                    <td mat-cell *matCellDef="let row"> {{row.email}} </td>
-                </ng-container>
+        <!-- Role Column -->
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Role </th>
+          <td mat-cell *matCellDef="let row">
+            <span class="role-badge" [ngClass]="row.role.toLowerCase()">{{row.role}}</span>
+          </td>
+        </ng-container>
 
-                <!-- Phone Column -->
-                <ng-container matColumnDef="phone">
-                    <th mat-header-cell *matHeaderCellDef> Phone </th>
-                    <td mat-cell *matCellDef="let row"> {{row.phone}} </td>
-                </ng-container>
+        <!-- Store Column -->
+        <ng-container matColumnDef="storeName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Store </th>
+          <td mat-cell *matCellDef="let row"> {{row.storeName || '-'}} </td>
+        </ng-container>
 
-                <!-- Role Column -->
-                <ng-container matColumnDef="role">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Role </th>
-                    <td mat-cell *matCellDef="let row">
-                        <span class="role-badge" [ngClass]="row.role.toLowerCase()">{{row.role}}</span>
-                    </td>
-                </ng-container>
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
+          <td mat-cell *matCellDef="let row">
+            <span class="status-badge" [class.active]="row.active" [class.inactive]="!row.active">
+              {{row.active ? 'Active' : 'Inactive'}}
+            </span>
+          </td>
+        </ng-container>
 
-                <!-- Store Column -->
-                <ng-container matColumnDef="storeName">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Store </th>
-                    <td mat-cell *matCellDef="let row"> {{row.storeName || '-'}} </td>
-                </ng-container>
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef> Actions </th>
+          <td mat-cell *matCellDef="let row">
+            <button mat-icon-button [color]="row.active ? 'warn' : 'primary'" (click)="toggleStatus(row)"
+                    [matTooltip]="row.active ? 'Deactivate User' : 'Activate User'">
+              <i class="fas" [class.fa-ban]="row.active" [class.fa-check-circle]="!row.active"></i>
+            </button>
+          </td>
+        </ng-container>
 
-                <!-- Status Column -->
-                <ng-container matColumnDef="status">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
-                    <td mat-cell *matCellDef="let row">
-                        <span class="status-badge" [class.active]="row.active" [class.inactive]="!row.active">
-                            {{row.active ? 'Active' : 'Inactive'}}
-                        </span>
-                    </td>
-                </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
 
-                <!-- Actions Column -->
-                <ng-container matColumnDef="actions">
-                    <th mat-header-cell *matHeaderCellDef> Actions </th>
-                    <td mat-cell *matCellDef="let row">
-                        <button mat-icon-button [color]="row.active ? 'warn' : 'primary'" (click)="toggleStatus(row)"
-                            [matTooltip]="row.active ? 'Deactivate User' : 'Activate User'">
-                            <mat-icon>{{row.active ? 'block' : 'check_circle'}}</mat-icon>
-                        </button>
-                    </td>
-                </ng-container>
+        <!-- Row shown when there is no matching data. -->
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" colspan="8">No data matching the filter "{{input.value}}"</td>
+        </tr>
+      </table>
 
-                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-                <!-- Row shown when there is no matching data. -->
-                <tr class="mat-row" *matNoDataRow>
-                    <td class="mat-cell" colspan="4">No data matching the filter "{{input.value}}"</td>
-                </tr>
-            </table>
-
-            <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator>
-        </div>
-    </mat-card>
+      <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator>
+    </div>
+  </mat-card>
 </div>

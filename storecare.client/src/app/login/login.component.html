@@ -63,8 +63,9 @@
 
       <!-- Remember Me & Forgot Password -->
       <div class="form-options">
-        <label class="checkbox-label">
+        <label class="checkbox-container">
           <input type="checkbox" [checked]="rememberMe" (change)="toggleRememberMe()">
+          <span class="checkmark"></span>
           <span class="checkbox-text">Remember me</span>
         </label>
         <a class="forgot-link" (click)="goToForgotPassword()">Forgot Password?</a>

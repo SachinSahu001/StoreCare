@@ -1,176 +1,454 @@
+/* ===== Users Container ===== */
 .users-container {
-    padding: 24px;
+  padding: 2rem;
+  background: #ffffff; /* Pure White Background */
+  min-height: 100vh;
 }
 
+/* ===== Header Section ===== */
 .header-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem 2rem;
+  background: #f0fff4; /* Light Mint Green Background */
+  border-radius: 16px;
+  border: 1px solid #d9f2e6;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.05);
 }
 
-.header-section h1 {
-    margin: 0;
-    font-size: 24px;
+  .header-section h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.875rem;
     font-weight: 700;
-    color: var(--text-main);
-    font-family: var(--font-heading);
-}
+    color: #1e293b;
+    letter-spacing: -0.025em;
+  }
 
-.header-section p {
-    margin: 4px 0 0;
-    color: var(--text-muted);
-}
+  .header-section p {
+    margin: 0;
+    color: #64748b;
+    font-size: 1rem;
+  }
 
-.table-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: var(--glass-shadow);
-}
-
-.filter-controls {
-    display: flex;
-    gap: 16px;
+  /* ===== Create Store Admin Button ===== */
+  .header-section button[mat-raised-button] {
+    background: #2ecc71 !important; /* Primary Mint Green */
+    color: white !important;
+    padding: 0 24px !important;
+    height: 46px !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    letter-spacing: 0.3px !important;
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3) !important;
+    transition: all 0.3s ease !important;
+    border: none !important;
+    display: inline-flex;
     align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
+    gap: 8px;
+  }
+
+    .header-section button[mat-raised-button]:hover {
+      background: #27ae60 !important; /* Darker Mint Green */
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(46, 204, 113, 0.4) !important;
+    }
+
+    .header-section button[mat-raised-button] i {
+      font-size: 1rem;
+    }
+
+/* ===== Table Card ===== */
+.table-card {
+  background: #ffffff !important; /* White Card */
+  border-radius: 20px !important;
+  border: 1px solid #d9f2e6 !important;
+  box-shadow: 0 8px 20px rgba(46, 204, 113, 0.08) !important;
+  overflow: hidden !important;
+  padding: 0 !important;
 }
 
+/* ===== Filter Controls ===== */
+.filter-controls {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem 1.5rem 0 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* ===== Search Field ===== */
 .search-field {
-    flex: 1;
-    min-width: 200px;
+  flex: 2;
+  min-width: 300px;
 }
 
 .role-filter {
-    width: 200px;
+  flex: 1;
+  min-width: 200px;
 }
 
+::ng-deep .search-field .mat-form-field-outline,
+::ng-deep .role-filter .mat-form-field-outline {
+  color: #d9f2e6 !important;
+}
+
+::ng-deep .search-field .mat-form-field-outline-thick,
+::ng-deep .role-filter .mat-form-field-outline-thick {
+  color: #2ecc71 !important; /* Mint Green Focus */
+}
+
+::ng-deep .search-field .mat-form-field-label,
+::ng-deep .role-filter .mat-form-field-label {
+  color: #64748b !important;
+}
+
+::ng-deep .search-field.mat-focused .mat-form-field-label,
+::ng-deep .role-filter.mat-focused .mat-form-field-label {
+  color: #2ecc71 !important; /* Mint Green Label */
+}
+
+::ng-deep .search-field .mat-input-element,
+::ng-deep .role-filter .mat-input-element {
+  color: #1e293b !important;
+}
+
+::ng-deep .search-field .mat-icon,
+::ng-deep .role-filter .mat-icon {
+  color: #2ecc71 !important; /* Mint Green Icon */
+}
+
+::ng-deep .search-field .mat-form-field-ripple,
+::ng-deep .role-filter .mat-form-field-ripple {
+  background-color: #2ecc71 !important;
+}
+
+::ng-deep .role-filter .mat-select-value {
+  color: #1e293b !important;
+}
+
+::ng-deep .role-filter .mat-select-arrow {
+  color: #2ecc71 !important;
+}
+
+/* ===== Loading Spinner ===== */
 .loading-spinner {
-    display: flex;
-    justify-content: center;
-    padding: 24px;
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
 }
 
+::ng-deep .loading-spinner .mat-spinner circle {
+  stroke: #2ecc71 !important; /* Mint Green Spinner */
+}
+
+/* ===== Table Container ===== */
 .table-container {
-    overflow: auto;
+  overflow-x: auto;
+  padding: 0 1.5rem 1.5rem 1.5rem;
 }
 
+/* ===== Table Styles ===== */
 table {
-    width: 100%;
-    background: transparent !important;
+  width: 100%;
+  background: #ffffff !important;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
-/* Table Header */
-::ng-deep .mat-mdc-header-cell {
-    background-color: rgba(0, 0, 0, 0.2) !important;
-    color: var(--text-muted) !important;
-    font-size: 0.75rem !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
-    border-bottom: 1px solid var(--glass-border) !important;
+/* Header Styles */
+::ng-deep .mat-header-cell {
+  background: #f0fff4 !important; /* Light Mint Green Header */
+  color: #1e293b !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px !important;
+  padding: 1rem 1rem !important;
+  border-bottom: 2px solid #2ecc71 !important; /* Mint Green Border */
 }
 
-/* Table Cells */
-::ng-deep .mat-mdc-cell {
-    color: var(--text-main) !important;
-    font-size: 0.9rem !important;
-    border-bottom: 1px solid var(--glass-border) !important;
-    padding: 16px !important;
+/* Cell Styles */
+::ng-deep .mat-cell {
+  color: #1e293b !important;
+  font-size: 0.95rem !important;
+  padding: 1rem 1rem !important;
+  border-bottom: 1px solid #d9f2e6 !important;
 }
 
-::ng-deep .mat-mdc-row:hover {
-    background-color: rgba(255, 255, 255, 0.05) !important;
+/* Row Hover */
+::ng-deep .mat-row:hover {
+  background: #f0fff4 !important; /* Light Mint Green Hover */
 }
 
+/* ===== Avatar Styles ===== */
 .avatar-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0fff4;
+  border: 2px solid #d9f2e6;
 }
 
 .user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--glass-border);
-    display: block;
-    transition: border-color 0.2s;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.user-avatar:hover {
-    border-color: var(--primary, #4f46e5);
-}
-
-/* Initials fallback — rendered via *ngIf so always flex when in DOM */
 .avatar-initials {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: 0.5px;
-    cursor: default;
-    flex-shrink: 0;
-    user-select: none;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1rem;
+  color: white;
+  text-transform: uppercase;
 }
 
+/* ===== Role Badge ===== */
 .role-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  border-radius: 30px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  min-width: 100px;
 }
 
-.role-badge.superadmin {
-    background-color: rgba(59, 130, 246, 0.2);
-    /* Blue */
-    color: #60a5fa;
-    border: 1px solid rgba(59, 130, 246, 0.3);
-}
+  .role-badge.superadmin {
+    background: #e6ffee;
+    color: #2ecc71;
+    border: 1px solid #2ecc71;
+  }
 
-.role-badge.storeadmin {
-    background-color: rgba(16, 185, 129, 0.2);
-    /* Green */
-    color: #34d399;
-    border: 1px solid rgba(16, 185, 129, 0.3);
-}
+  .role-badge.storeadmin {
+    background: #fff7e6;
+    color: #f59e0b;
+    border: 1px solid #f59e0b;
+  }
 
-.role-badge.customer {
-    background-color: rgba(245, 158, 11, 0.2);
-    /* Orange */
-    color: #fbbf24;
-    border: 1px solid rgba(245, 158, 11, 0.3);
-}
+  .role-badge.customer {
+    background: #e6f3ff;
+    color: #3b82f6;
+    border: 1px solid #3b82f6;
+  }
 
+/* ===== Status Badge ===== */
 .status-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  border-radius: 30px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  min-width: 90px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-.status-badge.active {
-    background-color: rgba(16, 185, 129, 0.2);
-    color: #34d399;
-    border: 1px solid rgba(16, 185, 129, 0.3);
+  .status-badge.active {
+    background: #e6ffee;
+    color: #2ecc71; /* Mint Green Text */
+    border: 1px solid #2ecc71;
+  }
+
+  .status-badge.inactive {
+    background: #fee2e2;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+  }
+
+/* ===== Action Buttons with FontAwesome ===== */
+::ng-deep button[mat-icon-button] {
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 36px !important;
+  border-radius: 8px !important;
+  margin: 0 4px;
+  transition: all 0.3s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
-.status-badge.inactive {
-    background-color: rgba(239, 68, 68, 0.2);
-    color: #f87171;
-    border: 1px solid rgba(239, 68, 68, 0.3);
+  ::ng-deep button[mat-icon-button] i {
+    font-size: 1.1rem;
+  }
+
+  ::ng-deep button[mat-icon-button][color="primary"] {
+    color: #2ecc71 !important; /* Mint Green Icon */
+    background: #e6ffee !important;
+  }
+
+    ::ng-deep button[mat-icon-button][color="primary"]:hover {
+      background: #2ecc71 !important;
+      color: white !important;
+      transform: scale(1.1);
+    }
+
+  ::ng-deep button[mat-icon-button][color="warn"] {
+    color: #ef4444 !important;
+    background: #fee2e2 !important;
+  }
+
+    ::ng-deep button[mat-icon-button][color="warn"]:hover {
+      background: #ef4444 !important;
+      color: white !important;
+      transform: scale(1.1);
+    }
+
+/* ===== Paginator Styles ===== */
+::ng-deep .mat-paginator {
+  background: transparent !important;
+  border-top: 1px solid #d9f2e6 !important;
+  margin-top: 1rem;
+  padding: 0.5rem 0;
+}
+
+  ::ng-deep .mat-paginator .mat-paginator-range-label {
+    color: #1e293b !important;
+    font-weight: 500;
+  }
+
+  ::ng-deep .mat-paginator .mat-icon-button {
+    color: #2ecc71 !important; /* Mint Green Icons */
+  }
+
+    ::ng-deep .mat-paginator .mat-icon-button[disabled] {
+      color: #cbd5e1 !important;
+    }
+
+  ::ng-deep .mat-paginator .mat-form-field-underline {
+    background-color: #2ecc71 !important;
+  }
+
+  ::ng-deep .mat-paginator .mat-select-value {
+    color: #1e293b !important;
+  }
+
+  ::ng-deep .mat-paginator .mat-select-arrow {
+    color: #2ecc71 !important;
+  }
+
+/* ===== No Data Row ===== */
+.mat-row .mat-cell[colspan] {
+  text-align: center;
+  color: #64748b;
+  padding: 2rem !important;
+  font-style: italic;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .users-container {
+    padding: 1rem;
+  }
+
+  .header-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+
+    .header-section button[mat-raised-button] {
+      width: 100%;
+      justify-content: center;
+    }
+
+  .filter-controls {
+    flex-direction: column;
+    padding: 1rem 1rem 0 1rem;
+  }
+
+  .search-field,
+  .role-filter {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .table-container {
+    padding: 0 1rem 1rem 1rem;
+  }
+
+  ::ng-deep .mat-cell,
+  ::ng-deep .mat-header-cell {
+    padding: 0.75rem 0.5rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  .avatar-wrapper {
+    width: 36px;
+    height: 36px;
+  }
+
+  .status-badge,
+  .role-badge {
+    min-width: 80px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+  }
+
+  ::ng-deep button[mat-icon-button] {
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+  }
+
+    ::ng-deep button[mat-icon-button] i {
+      font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 480px) {
+  .users-container {
+    padding: 0.75rem;
+  }
+
+  .header-section h1 {
+    font-size: 1.5rem;
+  }
+
+  .header-section p {
+    font-size: 0.9rem;
+  }
+
+  ::ng-deep .mat-cell,
+  ::ng-deep .mat-header-cell {
+    padding: 0.5rem 0.25rem !important;
+  }
+
+  .avatar-wrapper {
+    width: 32px;
+    height: 32px;
+  }
+
+  .avatar-initials {
+    font-size: 0.85rem;
+  }
+
+  .status-badge,
+  .role-badge {
+    min-width: 70px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  ::ng-deep button[mat-icon-button] {
+    width: 28px !important;
+    height: 28px !important;
+    line-height: 28px !important;
+  }
+
+    ::ng-deep button[mat-icon-button] i {
+      font-size: 0.85rem;
+    }
 }

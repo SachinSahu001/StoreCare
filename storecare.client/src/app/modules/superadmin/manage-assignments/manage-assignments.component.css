@@ -1,231 +1,486 @@
+/* ===== Assignments Container ===== */
 .assignments-container {
-    padding: 24px;
+  padding: 2rem;
+  background: #ffffff; /* Pure White Background */
+  min-height: 100vh;
 }
 
+/* ===== Header Section ===== */
 .header-section {
-    margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem 2rem;
+  background: #f0fff4; /* Light Mint Green Background */
+  border-radius: 16px;
+  border: 1px solid #d9f2e6;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.05);
 }
 
-.header-section h1 {
-    margin: 0;
-    font-size: 24px;
+  .header-section h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.875rem;
     font-weight: 700;
-    color: var(--text-main);
-    font-family: var(--font-heading);
+    color: #1e293b;
+    letter-spacing: -0.025em;
+  }
+
+  .header-section p {
+    margin: 0;
+    color: #64748b;
+    font-size: 1rem;
+  }
+
+/* ===== Tab Group Styles ===== */
+::ng-deep .mat-tab-group {
+  margin-top: 1rem;
 }
 
-.header-section p {
-    margin: 4px 0 0;
-    color: var(--text-muted);
+::ng-deep .mat-tab-label {
+  height: 48px;
+  padding: 0 24px;
+  font-weight: 500;
+  color: #64748b;
+  opacity: 1 !important;
 }
 
-.filter-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 24px;
+::ng-deep .mat-tab-label-active {
+  color: #2ecc71 !important; /* Mint Green Active Tab */
 }
 
-.filter-controls {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    flex-wrap: wrap;
+::ng-deep .mat-ink-bar {
+  background-color: #2ecc71 !important; /* Mint Green Underline */
 }
 
-.filter-controls button {
-    height: 56px;
-    margin-bottom: 20px;
+.tab-content {
+  padding: 2rem 0;
 }
 
-.table-card {
-    background: var(--glass-bg) !important;
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
-    border-radius: 16px;
-    padding: 0;
-    position: relative;
-    overflow: hidden;
-}
-
-.loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(4px);
-    z-index: 10;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.table-container {
-    overflow: auto;
-}
-
-table {
-    width: 100%;
-    background: transparent !important;
-}
-
-/* Table Header */
-::ng-deep .mat-mdc-header-cell {
-    background-color: rgba(0, 0, 0, 0.2) !important;
-    color: var(--text-muted) !important;
-    font-size: 0.75rem !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
-    border-bottom: 1px solid var(--glass-border) !important;
-}
-
-/* Table Cells */
-::ng-deep .mat-mdc-cell {
-    color: var(--text-main) !important;
-    font-size: 0.9rem !important;
-    border-bottom: 1px solid var(--glass-border) !important;
-    padding: 16px !important;
-}
-
-::ng-deep .mat-mdc-row:hover {
-    background-color: rgba(255, 255, 255, 0.05) !important;
-}
-
-.product-image {
-    width: 40px;
-    height: 40px;
-    border-radius: 4px;
-    object-fit: cover;
-    margin-right: 8px;
-    border: 1px solid var(--glass-border);
-}
-
-.product-name {
-    font-weight: 500;
-    color: var(--text-main);
-}
-
-.assigned-badge {
-    font-size: 10px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid var(--glass-border);
-    padding: 2px 6px;
-    border-radius: 4px;
-    color: var(--text-muted);
-    margin-top: 4px;
-    display: inline-block;
-}
-
-.no-data {
-    text-align: center;
-    padding: 48px;
-    color: var(--text-muted);
-}
-
-/* Wizard for Bulk Assign */
+/* ===== Wizard Card ===== */
 .wizard-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
-    padding: 24px;
-    color: var(--text-main);
+  background: #ffffff !important; /* White Card */
+  border-radius: 20px !important;
+  border: 1px solid #d9f2e6 !important;
+  box-shadow: 0 8px 20px rgba(46, 204, 113, 0.08) !important;
+  padding: 2rem !important;
 }
 
-.wizard-step h3 {
-    margin-top: 0;
-    color: var(--text-main);
+/* ===== Form Row ===== */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
 }
 
+/* ===== Form Fields ===== */
+::ng-deep .form-row .mat-form-field-outline {
+  color: #d9f2e6 !important;
+}
+
+::ng-deep .form-row .mat-form-field-outline-thick {
+  color: #2ecc71 !important; /* Mint Green Focus */
+}
+
+::ng-deep .form-row .mat-form-field-label {
+  color: #64748b !important;
+}
+
+::ng-deep .form-row.mat-focused .mat-form-field-label {
+  color: #2ecc71 !important; /* Mint Green Label */
+}
+
+::ng-deep .form-row .mat-input-element {
+  color: #1e293b !important;
+}
+
+::ng-deep .form-row .mat-select-value {
+  color: #1e293b !important;
+}
+
+::ng-deep .form-row .mat-select-arrow {
+  color: #2ecc71 !important;
+}
+
+::ng-deep .form-row .mat-form-field-ripple {
+  background-color: #2ecc71 !important;
+}
+
+/* ===== Wizard Step ===== */
+.wizard-step {
+  margin-bottom: 2rem;
+}
+
+  .wizard-step h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 1.5rem;
+  }
+
+/* ===== Table Card ===== */
+.table-card {
+  background: #ffffff !important; /* White Card */
+  border-radius: 20px !important;
+  border: 1px solid #d9f2e6 !important;
+  box-shadow: 0 8px 20px rgba(46, 204, 113, 0.08) !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+
+/* ===== Loading Spinner ===== */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}
+
+::ng-deep .loading-spinner .mat-spinner circle {
+  stroke: #2ecc71 !important; /* Mint Green Spinner */
+}
+
+/* ===== Table Container ===== */
+.table-container {
+  overflow-x: auto;
+  padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+/* ===== Table Styles ===== */
+table {
+  width: 100%;
+  background: #ffffff !important;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Header Styles */
+::ng-deep .mat-header-cell {
+  background: #f0fff4 !important; /* Light Mint Green Header */
+  color: #1e293b !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px !important;
+  padding: 1rem 1rem !important;
+  border-bottom: 2px solid #2ecc71 !important; /* Mint Green Border */
+}
+
+/* Cell Styles */
+::ng-deep .mat-cell {
+  color: #1e293b !important;
+  font-size: 0.95rem !important;
+  padding: 1rem 1rem !important;
+  border-bottom: 1px solid #d9f2e6 !important;
+}
+
+/* Row Hover */
+::ng-deep .mat-row:hover {
+  background: #f0fff4 !important; /* Light Mint Green Hover */
+}
+
+/* ===== Status Badge ===== */
+.status-badge {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  border-radius: 30px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  min-width: 90px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== Action Buttons ===== */
+::ng-deep button[mat-icon-button][color="warn"] {
+  color: #ef4444 !important;
+  margin: 0 4px;
+  background: #fee2e2 !important;
+  transition: all 0.3s ease !important;
+}
+
+  ::ng-deep button[mat-icon-button][color="warn"]:hover {
+    background: #ef4444 !important;
+    color: white !important;
+    transform: scale(1.1);
+  }
+
+::ng-deep button[mat-icon-button] i {
+  font-size: 1.1rem;
+}
+
+/* ===== Paginator Styles ===== */
+::ng-deep .mat-paginator {
+  background: transparent !important;
+  border-top: 1px solid #d9f2e6 !important;
+  margin-top: 1rem;
+  padding: 0.5rem 0;
+}
+
+  ::ng-deep .mat-paginator .mat-paginator-range-label {
+    color: #1e293b !important;
+    font-weight: 500;
+  }
+
+  ::ng-deep .mat-paginator .mat-icon-button {
+    color: #2ecc71 !important; /* Mint Green Icons */
+  }
+
+    ::ng-deep .mat-paginator .mat-icon-button[disabled] {
+      color: #cbd5e1 !important;
+    }
+
+  ::ng-deep .mat-paginator .mat-form-field-underline {
+    background-color: #2ecc71 !important;
+  }
+
+  ::ng-deep .mat-paginator .mat-select-value {
+    color: #1e293b !important;
+  }
+
+  ::ng-deep .mat-paginator .mat-select-arrow {
+    color: #2ecc71 !important;
+  }
+
+/* ===== Product Grid Styles ===== */
 .product-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+  margin-top: 1.5rem;
+  border: 1px solid #d9f2e6;
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .grid-header {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 16px;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: #f0fff4; /* Light Mint Green */
+  border-bottom: 1px solid #d9f2e6;
 }
 
+  .grid-header span {
+    color: #1e293b;
+    font-weight: 500;
+  }
+
 .product-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
-    max-height: 400px;
-    overflow-y: auto;
-    padding-right: 8px;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .product-item {
-    border: 1px solid var(--glass-border);
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 8px;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #d9f2e6;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.product-item:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: var(--primary-color);
-}
+  .product-item:hover {
+    background: #f0fff4; /* Light Mint Green Hover */
+  }
 
-.product-item.assigned {
-    opacity: 0.5;
-    cursor: default;
-}
+  .product-item.assigned {
+    background: #f8fafc;
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
 
 .product-thumb {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 6px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2px solid #d9f2e6;
+  background: #f0fff4;
+  margin: 0 1rem;
 }
 
 .product-info {
-    text-align: center;
+  flex: 1;
 }
 
-.product-info .name {
+  .product-info .name {
     font-weight: 600;
-    font-size: 0.9rem;
-    color: var(--text-main);
-}
+    color: #1e293b;
+    margin-bottom: 4px;
+  }
 
-.product-info .code {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-}
+  .product-info .code {
+    font-size: 0.8rem;
+    color: #64748b;
+  }
 
 .badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: var(--success);
-    color: white;
-    font-size: 0.6rem;
-    padding: 2px 6px;
-    border-radius: 4px;
+  padding: 0.25rem 0.75rem;
+  background: #e6ffee;
+  color: #2ecc71;
+  border-radius: 30px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid #2ecc71;
 }
 
+/* ===== Checkbox Styles ===== */
+::ng-deep .mat-checkbox-checked .mat-checkbox-background {
+  background-color: #2ecc71 !important; /* Mint Green Checkbox */
+}
+
+::ng-deep .mat-checkbox-indeterminate .mat-checkbox-background {
+  background-color: #2ecc71 !important;
+}
+
+::ng-deep .mat-checkbox-disabled .mat-checkbox-background {
+  background-color: #cbd5e1 !important;
+}
+
+/* ===== Actions Footer ===== */
 .actions-footer {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid var(--glass-border);
+  padding: 1.5rem;
+  border-top: 1px solid #d9f2e6;
+  display: flex;
+  justify-content: flex-end;
+}
+
+  .actions-footer button[mat-raised-button][color="accent"] {
+    background: #2ecc71 !important; /* Mint Green */
+    color: white !important;
+    padding: 0 24px !important;
+    height: 46px !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3) !important;
+    transition: all 0.3s ease !important;
+    border: none !important;
+  }
+
+    .actions-footer button[mat-raised-button][color="accent"]:hover {
+      background: #27ae60 !important; /* Darker Mint Green */
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(46, 204, 113, 0.4) !important;
+    }
+
+  .actions-footer button[mat-raised-button][color="primary"] {
+    background: #2ecc71 !important; /* Mint Green */
+    color: white !important;
+  }
+
+/* ===== No Data Row ===== */
+.mat-row .mat-cell[colspan] {
+  text-align: center;
+  color: #64748b;
+  padding: 2rem !important;
+  font-style: italic;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .assignments-container {
+    padding: 1rem;
+  }
+
+  .header-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+    .form-row button[mat-raised-button] {
+      width: 100%;
+    }
+
+  .table-container {
+    padding: 0 1rem 1rem 1rem;
+  }
+
+  ::ng-deep .mat-cell,
+  ::ng-deep .mat-header-cell {
+    padding: 0.75rem 0.5rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  .product-item {
+    padding: 0.75rem 1rem;
+  }
+
+  .product-thumb {
+    width: 36px;
+    height: 36px;
+    margin: 0 0.75rem;
+  }
+
+  .badge {
+    min-width: 70px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+  }
+
+  .actions-footer {
+    padding: 1rem;
+  }
+
+    .actions-footer button[mat-raised-button][color="accent"] {
+      width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+  .assignments-container {
+    padding: 0.75rem;
+  }
+
+  .header-section h1 {
+    font-size: 1.5rem;
+  }
+
+  .header-section p {
+    font-size: 0.9rem;
+  }
+
+  .wizard-card {
+    padding: 1.25rem !important;
+  }
+
+  ::ng-deep .mat-cell,
+  ::ng-deep .mat-header-cell {
+    padding: 0.5rem 0.25rem !important;
+  }
+
+  ::ng-deep button[mat-icon-button] {
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+  }
+
+    ::ng-deep button[mat-icon-button] i {
+      font-size: 0.95rem;
+    }
+
+  .product-thumb {
+    width: 32px;
+    height: 32px;
+  }
+
+  .product-info .name {
+    font-size: 0.85rem;
+  }
+
+  .product-info .code {
+    font-size: 0.7rem;
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+  }
 }

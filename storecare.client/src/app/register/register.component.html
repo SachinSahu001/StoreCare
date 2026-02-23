@@ -29,7 +29,7 @@
 
         <div class="step" [class.active]="currentStep >= 2" [class.completed]="currentStep > 2" (click)="goToStep(2)">
           <div class="step-number">
-            <i class="fas" [class.fa-check]="currentStep > 2" [class.fa-lock]="currentStep === 2"></i>
+            <i class="fas fa-check" [class.fa-lock]="currentStep === 2"></i>
           </div>
           <span class="step-label">Account</span>
         </div>
