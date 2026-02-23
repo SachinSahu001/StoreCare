@@ -5,16 +5,19 @@
             <p>Create, update, and sort product categories</p>
         </div>
         <button mat-raised-button color="primary" (click)="openDialog()">
-            <mat-icon>add</mat-icon> Add Category
+          <i class="fas fa-plus"></i> Add Category
         </button>
     </div>
 
     <mat-card class="table-card">
-        <mat-form-field appearance="outline" class="search-field">
-            <mat-label>Search Categories</mat-label>
-            <input matInput (keyup)="applyFilter($event)" placeholder="Ex. Electronics" #input>
-            <mat-icon matSuffix>search</mat-icon>
-        </mat-form-field>
+      <div class="search-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text"
+               class="search-input"
+               placeholder="Search Categories"
+               (keyup)="applyFilter($event)"
+               #input>
+      </div>
 
         <div *ngIf="isLoading" class="loading-spinner">
             <mat-spinner diameter="40"></mat-spinner>
@@ -63,12 +66,12 @@
                 <ng-container matColumnDef="actions">
                     <th mat-header-cell *matHeaderCellDef> Actions </th>
                     <td mat-cell *matCellDef="let row">
-                        <button mat-icon-button color="primary" (click)="openDialog(row)" matTooltip="Edit">
-                            <mat-icon>edit</mat-icon>
-                        </button>
-                        <button mat-icon-button color="warn" (click)="deleteCategory(row.id)" matTooltip="Delete">
-                            <mat-icon>delete</mat-icon>
-                        </button>
+                      <button mat-icon-button color="primary" (click)="openDialog(row)" matTooltip="Edit">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button mat-icon-button color="warn" (click)="deleteCategory(row.id)" matTooltip="Delete">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
                     </td>
                 </ng-container>
 

@@ -1,69 +1,30 @@
+/* ===== Login Container ===== */
 .login-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #e6ffee; /* Light Green Background */
   padding: 2rem;
   position: relative;
-  overflow: hidden;
 }
 
-  .login-container::before {
-    content: '';
-    position: absolute;
-    width: 2000px;
-    height: 2000px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    top: -1000px;
-    right: -500px;
-    animation: float 20s infinite ease-in-out;
-  }
-
-  .login-container::after {
-    content: '';
-    position: absolute;
-    width: 1500px;
-    height: 1500px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.05);
-    bottom: -750px;
-    left: -300px;
-    animation: float 25s infinite ease-in-out reverse;
-  }
-
-@keyframes float {
-  0%, 100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-
-  33% {
-    transform: translate(30px, -30px) rotate(120deg);
-  }
-
-  66% {
-    transform: translate(-20px, 20px) rotate(240deg);
-  }
-}
-
+/* ===== Login Card ===== */
 .login-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
+  background: white;
   border-radius: 24px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 20px 40px rgba(46, 204, 113, 0.15);
   width: 100%;
   max-width: 420px;
   padding: 2.5rem;
-  position: relative;
-  z-index: 1;
-  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid #2ecc7133;
+  animation: slideUp 0.5s ease;
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(40px);
+    transform: translateY(20px);
   }
 
   to {
@@ -72,7 +33,7 @@
   }
 }
 
-/* Header */
+/* ===== Header ===== */
 .login-header {
   text-align: center;
   margin-bottom: 2rem;
@@ -88,32 +49,30 @@
 
   .logo i {
     font-size: 2.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #2ecc71; /* Green Icon */
+    filter: drop-shadow(0 4px 6px rgba(46, 204, 113, 0.2));
   }
 
   .logo span {
     font-size: 2rem;
     font-weight: 700;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #2ecc71; /* Green Text */
+    letter-spacing: -0.5px;
   }
 
 .login-header h1 {
   font-size: 2rem;
-  color: #1a1a2e;
+  color: #1e293b;
   margin-bottom: 0.5rem;
   font-weight: 700;
 }
 
 .login-header p {
-  color: #666;
+  color: #64748b;
   font-size: 1rem;
 }
 
-/* Error Alert */
+/* ===== Error Alert ===== */
 .error-alert {
   background: #fee2e2;
   border: 1px solid #fecaca;
@@ -122,8 +81,8 @@
   margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: #dc2626;
+  gap: 0.75rem;
+  color: #ef4444;
   font-size: 0.95rem;
   animation: shake 0.5s ease;
 }
@@ -133,16 +92,16 @@
     transform: translateX(0);
   }
 
-  25% {
+  10%, 30%, 50%, 70%, 90% {
     transform: translateX(-5px);
   }
 
-  75% {
+  20%, 40%, 60%, 80% {
     transform: translateX(5px);
   }
 }
 
-/* Form Elements */
+/* ===== Form Groups ===== */
 .form-group {
   margin-bottom: 1.5rem;
 }
@@ -152,29 +111,31 @@ label {
   align-items: center;
   gap: 0.5rem;
   font-weight: 500;
-  color: #1a1a2e;
+  color: #1e293b;
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
 }
 
   label i {
-    color: #667eea;
+    color: #2ecc71; /* Green Icon */
     font-size: 1rem;
   }
 
+/* ===== Form Controls ===== */
 .form-control {
   width: 100%;
   padding: 0.875rem 1rem;
-  border: 2px solid #e0e0e0;
+  border: 2px solid #d9f2e6;
   border-radius: 12px;
   font-size: 1rem;
   transition: all 0.3s ease;
   background: white;
+  color: #1e293b;
 }
 
   .form-control:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    border-color: #2ecc71; /* Green Focus */
+    box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.1);
     outline: none;
   }
 
@@ -182,7 +143,11 @@ label {
     border-color: #ef4444;
   }
 
-/* Password Input */
+  .form-control::placeholder {
+    color: #a0aec0;
+  }
+
+/* ===== Password Input ===== */
 .password-input-wrapper {
   position: relative;
   display: flex;
@@ -194,17 +159,19 @@ label {
   right: 1rem;
   background: none;
   border: none;
-  color: #666;
+  color: #94a3b8;
   cursor: pointer;
   padding: 0.5rem;
-  transition: color 0.3s ease;
+  border-radius: 50%;
+  transition: all 0.3s ease;
 }
 
   .password-toggle:hover {
-    color: #667eea;
+    color: #2ecc71; /* Green Hover */
+    background: #e6ffee;
   }
 
-/* Error Message */
+/* ===== Error Message ===== */
 .error-message {
   display: flex;
   align-items: center;
@@ -218,7 +185,7 @@ label {
     font-size: 0.875rem;
   }
 
-/* Form Options */
+/* ===== Form Options ===== */
 .form-options {
   display: flex;
   align-items: center;
@@ -226,12 +193,13 @@ label {
   margin-bottom: 1.5rem;
 }
 
+/* Custom Checkbox */
 .checkbox-label {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
-  color: #666;
+  color: #4a5568;
   font-size: 0.95rem;
 }
 
@@ -239,27 +207,29 @@ label {
     width: 18px;
     height: 18px;
     cursor: pointer;
-    accent-color: #667eea;
+    accent-color: #2ecc71; /* Green Checkbox */
   }
 
+/* Forgot Link */
 .forgot-link {
-  color: #667eea;
+  color: #2ecc71; /* Green Link */
   font-size: 0.95rem;
   cursor: pointer;
   text-decoration: none;
   transition: color 0.3s ease;
+  font-weight: 500;
 }
 
   .forgot-link:hover {
-    color: #764ba2;
+    color: #27ae60; /* Darker Green */
     text-decoration: underline;
   }
 
-/* Login Button */
+/* ===== Login Button ===== */
 .btn-login {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #2ecc71; /* Green Button */
   color: white;
   border: none;
   border-radius: 12px;
@@ -269,31 +239,53 @@ label {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
+  .btn-login::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .btn-login:hover::before {
+    left: 100%;
+  }
+
   .btn-login:hover:not(:disabled) {
+    background: #27ae60; /* Darker Green */
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3);
   }
 
   .btn-login:disabled {
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: not-allowed;
   }
 
-/* Register Link */
+  .btn-login i {
+    font-size: 1.1rem;
+  }
+
+/* ===== Register Link ===== */
 .register-link {
   text-align: center;
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e0e0e0;
-  color: #666;
+  border-top: 1px solid #d9f2e6;
+  color: #64748b;
 }
 
   .register-link a {
-    color: #667eea;
+    color: #2ecc71; /* Green Link */
     font-weight: 600;
     cursor: pointer;
     text-decoration: none;
@@ -301,11 +293,11 @@ label {
   }
 
     .register-link a:hover {
-      color: #764ba2;
+      color: #27ae60;
       text-decoration: underline;
     }
 
-/* Responsive */
+/* ===== Responsive ===== */
 @media (max-width: 640px) {
   .login-container {
     padding: 1rem;
@@ -334,37 +326,23 @@ label {
   }
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
+@media (max-width: 480px) {
   .login-card {
-    background: rgba(26, 26, 46, 0.95);
+    padding: 1.25rem;
   }
 
-  .login-header h1,
-  label {
-    color: #fff;
+  .btn-login {
+    padding: 0.875rem;
   }
+}
 
-  .login-header p {
-    color: #b3b3b3;
+/* ===== Loading Spinner Animation ===== */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
+}
 
-  .form-control {
-    background: #2a2a3e;
-    border-color: #3a3a4e;
-    color: #fff;
-  }
-
-    .form-control:focus {
-      border-color: #667eea;
-    }
-
-  .checkbox-label {
-    color: #b3b3b3;
-  }
-
-  .register-link {
-    border-top-color: #3a3a4e;
-    color: #b3b3b3;
-  }
+.fa-spinner {
+  animation: spin 1s linear infinite;
 }
